@@ -44,7 +44,7 @@ export class OrderScheduler {
         const expiringOrders = await this.prisma.order.findMany({
             where: {
                 status: 'Pending',
-                expiresAt: {
+                expireAt: {
                     gte: now,
                     lte: thirtyMinutesFromNow,
                 },
@@ -55,15 +55,17 @@ export class OrderScheduler {
         });
 
         for (const order of expiringOrders) {
+            if (!order.expireAt) continue;
+
             const minutesLeft = Math.floor(
-                (order.expiresAt.getTime() - Date.now()) / (60 * 1000)
+                (order.expireAt.getTime() - Date.now()) / (60 * 1000)
             );
 
             // Only send if exactly 30, 15, 5, or 1 minute(s) left
             if ([30, 15, 5, 1].includes(minutesLeft)) {
                 await this.notificationService.createNotification(
                     order.userId,
-                    'ORDER_EXPIRING',
+                    'PRIZE_WON',
                     'คำสั่งซื้อใกล้หมดอายุ! ⏰',
                     `คำสั่งซื้อ #${order.id} จะหมดอายุในอีก ${minutesLeft} นาที กรุณาชำระเงินโดยเร็ว`,
                     { orderId: Number(order.id), minutesLeft },
