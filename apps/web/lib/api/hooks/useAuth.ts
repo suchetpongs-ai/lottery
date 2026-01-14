@@ -1,4 +1,4 @@
-import { useMutation, UseMutationResult } from '@tanstack/react-query';
+import { useMutation, UseMutationResult, useQuery } from '@tanstack/react-query';
 import apiClient from '../client';
 
 interface RegisterData {
@@ -53,4 +53,18 @@ export function useLogout() {
         localStorage.removeItem('authToken');
         window.location.href = '/login';
     };
+}
+
+export function useUser() {
+    return useQuery<AuthResponse['user']>({
+        queryKey: ['user'],
+        queryFn: async () => {
+            const token = localStorage.getItem('authToken');
+            if (!token) throw new Error('No token found');
+            const response = await apiClient.get('/auth/profile');
+            return response.data;
+        },
+        retry: false,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
 }

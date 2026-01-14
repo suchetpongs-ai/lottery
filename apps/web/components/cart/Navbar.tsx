@@ -7,6 +7,8 @@ import { CartSidebar } from './CartSidebar';
 import { LanguageSwitcher } from '../layout/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
 
+import { UserMenu } from '../layout/UserMenu';
+
 export function Navbar() {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const t = useTranslations();
@@ -58,28 +60,21 @@ export function Navbar() {
 
                         {/* Right Side Actions */}
                         <div className="flex items-center gap-3">
-                            {/* Language Switcher */}
                             <LanguageSwitcher />
-
-                            {/* Cart Icon */}
                             <CartIcon onClick={() => setIsCartOpen(true)} />
-
-                            {/* Login/Profile */}
-                            <Link href="/login">
-                                <button className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors font-medium">
-                                    {t('nav.login')}
-                                </button>
-                            </Link>
+                            <UserMenu />
                         </div>
                     </div>
                 </div>
-            </nav>
+            </div>
+        </nav >
 
-            {/* Cart Sidebar */}
-            <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+            {/* Cart Sidebar */ }
+            < CartSidebar isOpen = { isCartOpen } onClose = {() => setIsCartOpen(false)
+} />
 
-            {/* Spacer for fixed navbar */}
-            <div className="h-16"></div>
+{/* Spacer for fixed navbar */ }
+<div className="h-16"></div>
         </>
     );
 }
