@@ -1,0 +1,92 @@
+# ========================================
+# 🚀 COPY-PASTE DEPLOYMENT COMMANDS
+# ========================================
+# Repository: https://github.com/suchetpongs-ai/lottery
+# VPS IP: 76.13.18.170
+# ========================================
+
+# STEP 1: SSH เข้า VPS
+# รันบนเครื่อง local:
+ssh root@76.13.18.170
+# ใส่ password จาก .server-info.txt
+
+# ========================================
+# STEP 2: Clone Repository
+# ========================================
+cd /var/www
+rm -rf lottery
+git clone https://github.com/suchetpongs-ai/lottery.git lottery
+cd lottery
+
+# ========================================
+# STEP 3: Setup Environment Variables
+# ========================================
+cd /var/www/lottery/apps/api
+cat > .env << 'EOF'
+DATABASE_URL="postgresql://lottery_user:L0ttery@2024!Strong@localhost:5432/lottery_db?schema=public"
+NODE_ENV="production"
+JWT_SECRET="abcdef1234567890abcdef1234567890abcdef1234567890"
+PORT=3001
+TWEASY_API_URL="https://api.tweasy.com"
+TWEASY_API_KEY="your_api_key_here"
+TWEASY_SECRET_KEY="your_secret_key_here"
+FRONTEND_URL="http://76.13.18.170"
+API_URL="http://76.13.18.170/api"
+CLOUDINARY_CLOUD_NAME="your_cloud_name"
+CLOUDINARY_API_KEY="your_api_key"
+CLOUDINARY_API_SECRET="your_api_secret"
+EOF
+
+# ========================================
+# STEP 4: Install Dependencies
+# ========================================
+cd /var/www/lottery
+npm install
+
+cd apps/api
+npm install
+
+cd ../web
+npm install
+
+# ========================================
+# STEP 5: Build Applications
+# ========================================
+cd /var/www/lottery
+rm -rf apps/api/dist apps/web/.next apps/web/node_modules/.cache
+
+# Build Backend
+cd apps/api
+npm run build
+
+# Verify backend build
+ls -la dist/main.js
+
+# Build Frontend
+cd ../web
+npm run build
+
+# ========================================
+# STEP 6: Start PM2 Services
+# ========================================
+pm2 delete all
+
+cd /var/www/lottery/apps/api
+pm2 start dist/main.js --name lottery-api
+
+cd /var/www/lottery/apps/web
+pm2 start npm --name lottery-web -- start
+
+pm2 save
+pm2 list
+
+# ========================================
+# ✅ DONE! Check the website
+# ========================================
+echo "🎉 Deployment Complete!"
+echo "🌐 Open: http://76.13.18.170"
+
+# Verification commands:
+# pm2 logs lottery-api --lines 20 --nostream
+# pm2 logs lottery-web --lines 20 --nostream
+# curl http://76.13.18.170

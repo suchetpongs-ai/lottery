@@ -1,0 +1,57 @@
+# ========================================
+# 🔧 FIX lottery-web ERROR
+# ========================================
+# Copy-paste คำสั่งเหล่านี้บน VPS
+# ========================================
+
+# STEP 1: ดู Error Logs
+pm2 logs lottery-web --lines 50 --nostream
+
+# STEP 2: Stop lottery-web
+pm2 delete lottery-web
+
+# STEP 3: ตรวจสอบ Build
+cd /var/www/lottery/apps/web
+ls -la .next
+
+# STEP 4: Clean และ Build ใหม่
+cd /var/www/lottery/apps/web
+rm -rf .next node_modules/.cache
+
+# Build ใหม่
+npm run build
+
+# STEP 5: ตรวจสอบว่า Build สำเร็จ
+ls -la .next
+# ต้องเห็น folder .next
+
+# STEP 6: Start lottery-web ใหม่
+cd /var/www/lottery/apps/web
+pm2 start npm --name lottery-web -- start
+
+# STEP 7: ตรวจสอบสถานะ
+pm2 list
+
+# STEP 8: ดู Logs อีกครั้ง
+pm2 logs lottery-web --lines 20 --nostream
+
+# STEP 9: Save PM2 config
+pm2 save
+
+# ========================================
+# ✅ Verification
+# ========================================
+echo "Checking services..."
+pm2 list
+
+echo "Testing website..."
+curl http://localhost:3000
+
+# ถ้ายังไม่ได้ ลอง restart ทั้งหมด:
+# pm2 restart all
+# pm2 logs --lines 50
+
+# ========================================
+# 🌐 Open browser and test
+# ========================================
+# http://76.13.18.170
