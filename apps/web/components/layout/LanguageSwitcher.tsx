@@ -14,18 +14,8 @@ export function LanguageSwitcher() {
 
     const switchLocale = (newLocale: Locale) => {
         startTransition(() => {
-            // Remove current locale from pathname
-            const segments = pathname.split('/');
-            const currentLocaleIndex = segments.findIndex(seg => locales.includes(seg as Locale));
-
-            if (currentLocaleIndex !== -1) {
-                segments[currentLocaleIndex] = newLocale;
-            } else {
-                segments.splice(1, 0, newLocale);
-            }
-
-            const newPath = segments.filter(Boolean).join('/');
-            router.push(`/${newPath}`);
+            // Use next-intl router which automatically handles locale switching
+            router.replace(pathname, { locale: newLocale });
             setIsOpen(false);
         });
     };
