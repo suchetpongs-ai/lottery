@@ -39,10 +39,10 @@ export function UploadTicketsForm() {
             const tickets = lines.slice(1).map(line => { // Skip header
                 const [ticketNumber, priceStr] = line.split(',');
                 return {
-                    ticketNumber: ticketNumber.trim(),
-                    price: parseFloat(priceStr.trim()),
+                    ticketNumber: ticketNumber?.trim() || '',
+                    price: parseFloat(priceStr?.trim() || '0'),
                 };
-            });
+            }).filter(ticket => ticket.ticketNumber && !isNaN(ticket.price));
 
             // Upload to API
             await api.post('/admin/tickets', {
