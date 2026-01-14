@@ -3,7 +3,7 @@ import withNextIntl from 'next-intl/plugin';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     // Performance Optimizations
-    output: 'standalone',
+    // output: 'standalone', // Commented out - use standard build
     reactStrictMode: true,
 
     // Image optimization

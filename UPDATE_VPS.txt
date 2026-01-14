@@ -1,0 +1,62 @@
+# ========================================
+# 🔄 UPDATE VPS WITH LATEST CODE
+# ========================================
+# ปัญหา: lottery-web error เพราะใช้ code เก่า
+# แก้ไข: Pull code ใหม่จาก GitHub และ rebuild
+# ========================================
+
+# STEP 1: Pull Latest Code
+cd /var/www/lottery
+git pull origin main
+
+# STEP 2: Clean Everything
+rm -rf apps/api/dist apps/web/.next apps/web/node_modules/.cache node_modules
+
+# STEP 3: Install Dependencies (อาจมีไฟล์ใหม่)
+npm install
+cd apps/api && npm install
+cd ../web && npm install
+
+# STEP 4: Build Backend
+cd /var/www/lottery/apps/api
+npm run build
+ls -la dist/main.js  # ตรวจสอบว่า build สำเร็จ
+
+# STEP 5: Build Frontend
+cd /var/www/lottery/apps/web  
+npm run build
+ls -la .next  # ตรวจสอบว่า build สำเร็จ
+
+# STEP 6: Restart Services
+pm2 delete all
+
+cd /var/www/lottery/apps/api
+pm2 start dist/main.js --name lottery-api
+
+cd /var/www/lottery/apps/web
+pm2 start npm --name lottery-web -- start
+
+pm2 save
+pm2 list
+
+# ========================================
+# ✅ Verification
+# ========================================
+echo "🔍 Checking services..."
+pm2 list
+
+# Both should show 'online':
+# lottery-api  - online ✅
+# lottery-web  - online ✅
+
+echo "🌐 Testing website..."
+curl http://localhost:3000
+
+# ถ้ายัง error:
+# pm2 logs lottery-web --lines 50 --nostream
+# pm2 logs lottery-api --lines 50 --nostream
+
+# ========================================
+# 🌐 Open Browser
+# ========================================
+# http://76.13.18.170

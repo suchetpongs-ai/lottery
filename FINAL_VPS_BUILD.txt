@@ -1,0 +1,7 @@
+# ========================================
+# ✅ PULL LATEST CODE AND BUILD
+# ========================================
+# Run on VPS (after SSH)
+# ========================================
+
+cd /var/www/lottery && git pull origin main && cd apps/api && npx prisma generate && npm run build && cd ../web && npm run build && pm2 delete all && pm2 start /var/www/lottery/apps/api/dist/main.js --name lottery-api && pm2 start npm --name lottery-web --cwd /var/www/lottery/apps/web -- start && pm2 save && pm2 list && echo "✅ ✅ ✅ DONE! ✅ ✅ ✅"

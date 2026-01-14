@@ -1,0 +1,110 @@
+# ========================================
+# 🎯 STEP-BY-STEP DEPLOYMENT
+# ========================================
+# รันบน VPS เท่านั้น! ไม่ใช่บน Windows!
+# SSH เข้า VPS ก่อน: ssh root@76.13.18.170
+# ========================================
+
+# ========================================
+# STEP 1: ตรวจสอบว่าอยู่บน VPS
+# ========================================
+whoami
+# ต้องแสดง: root
+
+hostname
+# ต้องแสดง: srv1269924 หรือชื่อ VPS
+
+# ถ้าไม่ใช่ ให้ SSH เข้าก่อน:
+# ssh root@76.13.18.170
+
+# ========================================
+# STEP 2: ลบทุกอย่างและเริ่มใหม่
+# ========================================
+cd /var/www
+rm -rf lottery
+pwd
+# ต้องแสดง: /var/www
+
+# ========================================
+# STEP 3: Clone Repository
+# ========================================
+git clone https://github.com/suchetpongs-ai/lottery.git
+ls -la lottery/
+
+# ตรวจสอบว่ามี:
+# - apps/
+# - package.json
+# - turbo.json
+
+cd lottery
+ls -la
+
+# ========================================
+# STEP 4: Setup .env
+# ========================================
+cat > apps/api/.env << 'EOF'
+DATABASE_URL="postgresql://lottery_user:L0ttery@2024!Strong@localhost:5432/lottery_db?schema=public"
+NODE_ENV="production"
+JWT_SECRET="abcdef1234567890abcdef1234567890abcdef1234567890"
+PORT=3001
+TWEASY_API_URL="https://api.tweasy.com"
+TWEASY_API_KEY="your_api_key_here"
+TWEASY_SECRET_KEY="your_secret_key_here"
+FRONTEND_URL="http://76.13.18.170"
+API_URL="http://76.13.18.170/api"
+EOF
+
+# ตรวจสอบ
+cat apps/api/.env
+
+# ========================================
+# STEP 5: Install Dependencies
+# ========================================
+npm install
+cd apps/api && npm install
+cd ../web && npm install
+
+# ========================================
+# STEP 6: Build Backend
+# ========================================
+cd /var/www/lottery/apps/api
+npm run build
+
+# ตรวจสอบ
+ls -la dist/main.js
+# ถ้าไม่มี ให้ดู error ด้านบน
+
+# ========================================
+# STEP 7: Build Frontend
+# ========================================
+cd /var/www/lottery/apps/web
+npm run build
+
+# ตรวจสอบ
+ls -la .next
+# ถ้าไม่มี ให้ดู error ด้านบน
+
+# ========================================
+# STEP 8: Start Services
+# ========================================
+pm2 delete all
+
+pm2 start /var/www/lottery/apps/api/dist/main.js --name lottery-api
+pm2 start npm --name lottery-web --cwd /var/www/lottery/apps/web -- start
+
+pm2 save
+pm2 list
+
+# ========================================
+# ✅ VERIFICATION
+# ========================================
+pm2 list
+# ต้องเห็น online ทั้ง 2
+
+curl http://localhost:3000
+# ต้องได้ HTML response
+
+# ========================================
+# 🌐 OPEN BROWSER
+# ========================================
+# http://76.13.18.170
