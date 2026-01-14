@@ -9,11 +9,13 @@ interface Order {
     id: string;
     userId: number;
     totalAmount: number;
+    totalPrice: number;
     status: string;
     createdAt: string;
     expireAt: string;
     paidAt?: string;
     items: OrderItem[];
+    tickets: OrderItem[];
     payments: Payment[];
 }
 
