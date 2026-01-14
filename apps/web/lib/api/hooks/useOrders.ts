@@ -45,9 +45,9 @@ export function useCheckout(): UseMutationResult<Order, Error, CheckoutData> {
     });
 }
 
-export function useConfirmPayment(): UseMutationResult<any, Error, number> {
+export function useConfirmPayment(): UseMutationResult<any, Error, string> {
     return useMutation({
-        mutationFn: async (orderId: number) => {
+        mutationFn: async (orderId: string) => {
             const response = await apiClient.post(`/order/${orderId}/confirm-payment`);
             return response.data;
         },
