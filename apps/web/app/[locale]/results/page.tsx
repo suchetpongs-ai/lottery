@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePastResults, Round, WinningNumbers } from '@/lib/api/hooks/useLottery';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
@@ -19,10 +19,12 @@ export default function ResultsPage() {
     const [checkLoading, setCheckLoading] = useState(false);
 
     // Auto expand the first one if available and nothing selected
-    if (rounds && rounds.length > 0) {
-        if (expandedId === null) setExpandedId(rounds[0].id);
-        if (!selectedRoundId) setSelectedRoundId(rounds[0].id.toString());
-    }
+    useEffect(() => {
+        if (rounds && rounds.length > 0) {
+            if (expandedId === null) setExpandedId(rounds[0].id);
+            if (!selectedRoundId) setSelectedRoundId(rounds[0].id.toString());
+        }
+    }, [rounds, expandedId, selectedRoundId]);
 
     const toggleExpand = (id: number) => {
         setExpandedId(expandedId === id ? null : id);
