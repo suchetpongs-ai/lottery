@@ -12,6 +12,7 @@ interface Order {
     status: string;
     createdAt: string;
     expireAt: string;
+    paidAt?: string;
     items: OrderItem[];
     payments: Payment[];
 }
