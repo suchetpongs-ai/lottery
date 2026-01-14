@@ -1,0 +1,32 @@
+# ========================================
+# 🔍 DEBUG lottery-web ERROR
+# ========================================
+# รันคำสั่งเหล่านี้แล้วส่งผลลัพธ์มา
+# ========================================
+
+# 1. ดูสถานะ PM2
+pm2 list
+
+# 2. ดู Error Logs ของ lottery-web
+pm2 logs lottery-web --lines 100 --nostream
+
+# 3. ดู Error Logs ของ lottery-api
+pm2 logs lottery-api --lines 50 --nostream
+
+# 4. เช็คว่า Build สำเร็จหรือไม่
+echo "=== Checking Backend Build ==="
+ls -la /var/www/lottery/apps/api/dist/main.js
+
+echo "=== Checking Frontend Build ==="
+ls -la /var/www/lottery/apps/web/.next
+
+# 5. เช็คว่า Frontend รันที่ port อะไร
+echo "=== Checking Ports ==="
+netstat -tulpn | grep node
+
+# 6. ลองรัน Frontend แบบ manual
+echo "=== Trying to start frontend manually ==="
+cd /var/www/lottery/apps/web
+npm start
+
+# ส่งผลลัพธ์ทั้งหมดมาให้ดูครับ

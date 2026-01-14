@@ -1,0 +1,39 @@
+# ========================================
+# 🚀 SIMPLE REBUILD (Copy-Paste Ready)
+# ========================================
+
+# Stop everything
+pm2 delete all
+
+# Go to project root
+cd /var/www/lottery
+
+# Clean
+rm -rf apps/api/dist apps/web/.next node_modules
+
+# Install
+npm install
+cd apps/api && npm install
+cd ../web && npm install
+
+# Build Backend
+cd /var/www/lottery/apps/api
+npm run build
+ls -la dist/main.js
+
+# Build Frontend
+cd /var/www/lottery/apps/web
+npm run build
+ls -la .next
+
+# Start Services
+pm2 start /var/www/lottery/apps/api/dist/main.js --name lottery-api
+pm2 start npm --name lottery-web --cwd /var/www/lottery/apps/web -- start
+
+# Save and Check
+pm2 save
+pm2 list
+
+# ถ้ายัง error ให้รัน:
+# pm2 logs lottery-web --lines 50
+# pm2 logs lottery-api --lines 50
