@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { OrderService } from './order.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificationService } from '../common/notification.service';
+import { NotificationService, NotificationType } from '../common/notification.service';
 
 @Injectable()
 export class OrderScheduler {
