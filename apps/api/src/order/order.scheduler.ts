@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { OrderService } from './order.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,6 +9,7 @@ export class OrderScheduler {
     private readonly logger = new Logger(OrderScheduler.name);
 
     constructor(
+        @Inject(forwardRef(() => OrderService))
         private readonly orderService: OrderService,
         private readonly prisma: PrismaService,
         private readonly notificationService: NotificationService,
