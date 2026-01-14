@@ -20,7 +20,7 @@ export default function ResultsPage() {
 
     // Auto expand the first one if available and nothing selected
     useEffect(() => {
-        if (rounds && rounds.length > 0) {
+        if (rounds && rounds.length > 0 && rounds[0]) {
             if (expandedId === null) setExpandedId(rounds[0].id);
             if (!selectedRoundId) setSelectedRoundId(rounds[0].id.toString());
         }
