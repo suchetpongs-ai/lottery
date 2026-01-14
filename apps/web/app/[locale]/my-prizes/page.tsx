@@ -7,6 +7,7 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 
 interface WinningTicket {
+    ticketId?: number;
     ticketNumber: string;
     prizeAmount: number;
     prizeTier: string;
