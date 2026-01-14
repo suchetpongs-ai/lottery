@@ -1,0 +1,56 @@
+// Add these new models at the end of schema.prisma
+
+// ========================================
+// การเรียกเงินรางวัล (Claims)
+// ========================================
+model Claim {
+  id              BigInt    @id @default(autoincrement())
+  ticketId        BigInt    @map("ticket_id")
+  userId          Int       @map("user_id")
+  amount          Decimal
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  claimedAt       DateTime  @default(now()) @map("claimed_at")
+  processedAt     DateTime? @map("processed_at")
+  processedBy     Int?      @map("processed_by")
+  rejectionReason String?   @map("rejection_reason")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("claims")
+}
+
+// ========================================
+// เลขโปรด (Wishlist)
+// ========================================
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  numbers   String   // JSON array of favorite numbers
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+  @@map("wishlists")
+}
+
+// ========================================
+// การแจ้งเตือน (Notifications)
+// ========================================
+model Notification {
+  id        BigInt   @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  type      String   // NEW_ROUND, PRIZE_WIN, CLAIM_APPROVED, CLAIM_REJECTED
+  title     String
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  data      String?  // JSON additional data
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}

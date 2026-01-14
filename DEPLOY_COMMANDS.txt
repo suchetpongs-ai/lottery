@@ -1,0 +1,212 @@
+# 🚀 คำสั่งสำหรับ Deploy แบบ Copy-Paste ทั้งหมด
+# แค่คัดลอกไปวางใน Terminal ทีละขั้นตอน
+
+## ===============================================
+## ขั้นตอนที่ 1: SSH เข้า Server
+## ===============================================
+# เปิด PowerShell แล้วรัน:
+ssh root@76.13.18.170
+# Password: bcgAxlDCfwC?yv)FY3&A
+
+## ===============================================
+## ขั้นตอนที่ 2: Setup Server (รันทีเดียว)
+## ===============================================
+# หลัง SSH เข้าไป คัดลอกคำสั่งนี้ทั้งหมดวาง:
+
+# อัพเดทระบบ
+apt update && apt upgrade -y
+
+# ติดตั้ง Node.js 20
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs
+
+# ติดตั้ง PM2
+npm install -g pm2
+
+# ติดตั้ง PostgreSQL
+apt install -y postgresql postgresql-contrib
+systemctl start postgresql
+systemctl enable postgresql
+
+# สร้าง Database
+sudo -u postgres psql << EOF
+CREATE DATABASE lottery_db;
+CREATE USER lottery_user WITH ENCRYPTED PASSWORD 'L0ttery@2024!Strong';
+GRANT ALL PRIVILEGES ON DATABASE lottery_db TO lottery_user;
+ALTER DATABASE lottery_db OWNER TO lottery_user;
+\q
+EOF
+
+# ติดตั้ง Nginx
+apt install -y nginx
+systemctl start nginx
+systemctl enable nginx
+
+# ติดตั้ง Git
+apt install -y git
+
+# ติดตั้ง Certbot (SSL)
+apt install -y certbot python3-certbot-nginx
+
+# สร้างโฟลเดอร์
+mkdir -p /var/www/lottery
+
+# ตั้งค่า Firewall
+ufw allow OpenSSH
+ufw allow 'Nginx Full'
+ufw --force enable
+
+echo "✅ Setup Server เสร็จสมบูรณ์!"
+
+## ===============================================
+## ขั้นตอนที่ 3: อัพโหลดโค้ด (ใช้ FileZilla)
+## ===============================================
+# 1. Download FileZilla: https://filezilla-project.org
+# 2. เชื่อมต่อ SFTP:
+#    Host: sftp://76.13.18.170
+#    Username: root
+#    Password: bcgAxlDCfwC?yv)FY3&A
+#    Port: 22
+# 3. อัพโหลดโฟลเดอร์ทั้งหมดไป: /var/www/lottery
+
+## ===============================================
+## ขั้นตอนที่ 4: สร้างไฟล์ .env
+## ===============================================
+# หลังอัพโหลดโค้ดเสร็จ กลับมา SSH แล้วรัน:
+
+cat > /var/www/lottery/apps/api/.env << 'EOF'
+# Database
+DATABASE_URL="postgresql://lottery_user:L0ttery@2024!Strong@localhost:5432/lottery_db?schema=public"
+
+# Application
+PORT=3001
+NODE_ENV=production
+
+# JWT
+JWT_SECRET=abcdef1234567890abcdef1234567890abcdef1234567890
+
+# Tweasy Payment
+TWEASY_API_URL=https://api.tweasy.com/v1
+TWEASY_API_KEY=your_real_tweasy_api_key
+TWEASY_SECRET_KEY=your_real_tweasy_secret_key
+
+# URLs
+FRONTEND_URL=http://76.13.18.170
+API_URL=http://76.13.18.170/api
+
+# Cloudinary (ถ้าใช้)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+EOF
+
+echo "✅ สร้างไฟล์ .env เสร็จ!"
+
+## ===============================================
+## ขั้นตอนที่ 5: Build โปรเจค
+## ===============================================
+cd /var/www/lottery
+
+# ติดตั้ง dependencies
+npm install
+
+# Backend
+cd apps/api
+npx prisma migrate deploy
+npx prisma generate
+npm run build
+
+# Frontend
+cd ../web
+npm run build
+
+echo "✅ Build เสร็จ!"
+
+## ===============================================
+## ขั้นตอนที่ 6: Run ด้วย PM2
+## ===============================================
+# Backend
+cd /var/www/lottery/apps/api
+pm2 start dist/main.js --name lottery-api
+
+# Frontend
+cd /var/www/lottery/apps/web
+pm2 start npm --name lottery-web -- start
+
+# บันทึกการตั้งค่า
+pm2 save
+pm2 startup
+
+# ดูสถานะ
+pm2 list
+
+echo "✅ เริ่มต้น services เสร็จ!"
+
+## ===============================================
+## ขั้นตอนที่ 7: ตั้งค่า Nginx
+## ===============================================
+cat > /etc/nginx/sites-available/lottery << 'EOF'
+server {
+    listen 80;
+    server_name 76.13.18.170 srv1269924.hstgr.cloud;
+
+    # Frontend
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Backend API
+    location /api {
+        rewrite ^/api(.*)$ $1 break;
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Payment webhooks
+    location /payment/ {
+        proxy_pass http://localhost:3001/payment/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+EOF
+
+# เปิดใช้งาน
+ln -s /etc/nginx/sites-available/lottery /etc/nginx/sites-enabled/
+nginx -t
+systemctl restart nginx
+
+echo "✅ ตั้งค่า Nginx เสร็จ!"
+
+## ===============================================
+## ขั้นตอนที่ 8: ทดสอบ
+## ===============================================
+echo ""
+echo "========================================="
+echo "✅ Deploy เสร็จสมบูรณ์!"
+echo "========================================="
+echo ""
+echo "🌐 เข้าเว็บได้ที่:"
+echo "   http://76.13.18.170"
+echo ""
+echo "📊 ดู Logs:"
+echo "   pm2 logs lottery-api"
+echo "   pm2 logs lottery-web"
+echo ""
+echo "🔄 Restart Services:"
+echo "   pm2 restart all"
+echo ""
+
+## ===============================================
+## ขั้นตอนที่ 9: ติดตั้ง SSL (ถ้ามี Domain)
+## ===============================================
+# ถ้ามี domain แล้ว (เช่น lottery.com):
+# certbot --nginx -d lottery.com -d www.lottery.com

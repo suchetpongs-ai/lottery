@@ -1,0 +1,113 @@
+import { Injectable } from '@nestjs/common';
+import * as nodemailer from 'nodemailer';
+import { ConfigService } from '@nestjs/config';
+
+export interface EmailOptions {
+    to: string;
+    subject: string;
+    text?: string;
+    html?: string;
+}
+
+@Injectable()
+export class EmailService {
+    private transporter: nodemailer.Transporter;
+
+    constructor(private configService: ConfigService) {
+        // Initialize email transporter
+        // For development, you can use ethereal.email (free test email service)
+        // For production, use SendGrid, AWS SES, or Mailgun
+
+        this.transporter = nodemailer.createTransporter({
+            host: this.configService.get('EMAIL_HOST') || 'smtp.gmail.com',
+            port: this.configService.get('EMAIL_PORT') || 587,
+            secure: false,
+            auth: {
+                user: this.configService.get('EMAIL_USER'),
+                pass: this.configService.get('EMAIL_PASSWORD'),
+            },
+        });
+    }
+
+    async sendEmail(options: EmailOptions): Promise<void> {
+        try {
+            await this.transporter.sendMail({
+                from: this.configService.get('EMAIL_FROM') || 'noreply@lottery.com',
+                to: options.to,
+                subject: options.subject,
+                text: options.text,
+                html: options.html,
+            });
+            console.log(`Email sent to ${options.to}`);
+        } catch (error) {
+            console.error('Failed to send email:', error);
+            // Don't throw error - email failure shouldn't break the application
+        }
+    }
+
+    // Template methods for specific emails
+    async sendWelcomeEmail(email: string, username: string) {
+        await this.sendEmail({
+            to: email,
+            subject: 'ยินดีต้อนรับสู่ระบบสลากออนไลน์',
+            html: `
+        <h1>สวัสดี ${username}!</h1>
+        <p>ขอบคุณที่สมัครสมาชิกกับเรา</p>
+        <p>เริ่มซื้อสลากได้ทันที!</p>
+      `,
+        });
+    }
+
+    async sendPrizeWinEmail(email: string, ticketNumber: string, prizeAmount: number, prizeTier: string) {
+        await this.sendEmail({
+            to: email,
+            subject: '🎉 ยินดีด้วย! คุณถูกรางวัล!',
+            html: `
+        <h1>🎉 ยินดีด้วย!</h1>
+        <p>สลากหมายเลข <strong>${ticketNumber}</strong> ของคุณถูก${prizeTier}</p>
+        <h2>จำนวนเงิน: ฿${prizeAmount.toLocaleString()}</h2>
+        <p>เข้าสู่ระบบเพื่อขอรับเงินรางวัล</p>
+        <a href="${this.configService.get('WEB_URL')}/my-prizes">ดูรางวัลของคุณ</a>
+      `,
+        });
+    }
+
+    async sendClaimApprovedEmail(email: string, ticketNumber: string, amount: number) {
+        await this.sendEmail({
+            to: email,
+            subject: '✅ อนุมัติการรับเงินรางวัลแล้ว',
+            html: `
+        <h1>✅ อนุมัติแล้ว!</h1>
+        <p>การขอรับเงินรางวัลสลาก ${ticketNumber}</p>
+        <p>จำนวน: ฿${amount.toLocaleString()}</p>
+        <p>จะโอนเข้าบัญชีภายใน 3-5 วันทำการ</p>
+      `,
+        });
+    }
+
+    async sendClaimRejectedEmail(email: string, ticketNumber: string, reason: string) {
+        await this.sendEmail({
+            to: email,
+            subject: '❌ การรับเงินรางวัลถูกปฏิเสธ',
+            html: `
+        <h1>การขอรับเงินรางวัลถูกปฏิเสธ</h1>
+        <p>สลาก: ${ticketNumber}</p>
+        <p>เหตุผล: ${reason}</p>
+        <p>หากมีข้อสงสัย กรุณาติดต่อฝ่ายบริการลูกค้า</p>
+      `,
+        });
+    }
+
+    async sendNewRoundEmail(email: string, roundName: string) {
+        await this.sendEmail({
+            to: email,
+            subject: '🎰 งวดใหม่เปิดขายแล้ว!',
+            html: `
+        <h1>🎰 งวดใหม่!</h1>
+        <p>${roundName} เปิดขายแล้ว!</p>
+        <p>รีบซื้อก่อนหมด!</p>
+        <a href="${this.configService.get('WEB_URL')}/browse">เลือกซื้อสลาก</a>
+      `,
+        });
+    }
+}

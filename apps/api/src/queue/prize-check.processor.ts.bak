@@ -1,0 +1,126 @@
+import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
+import { Logger } from '@nestjs/common';
+import { Job } from 'bullmq';
+import { PrizeCheckJob } from './queue.service';
+import { PrismaService } from '../prisma/prisma.service';
+
+@Processor('prize-check')
+export class PrizeCheckProcessor extends WorkerHost {
+    private readonly logger = new Logger(PrizeCheckProcessor.name);
+
+    constructor(private prisma: PrismaService) {
+        super();
+    }
+
+    async process(job: Job<PrizeCheckJob>): Promise<any> {
+        this.logger.log(`Processing prize check job ${job.id} for order ${job.data.orderId}`);
+
+        try {
+            if (job.name === 'check-all-prizes') {
+                return await this.checkAllPaidOrders();
+            }
+
+            return await this.checkOrderPrizes(job.data);
+        } catch (error) {
+            this.logger.error(`Failed to process job ${job.id}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Check prizes for a specific order
+     */
+    private async checkOrderPrizes(data: PrizeCheckJob) {
+        const { orderId, tickets } = data;
+
+        this.logger.log(`Checking prizes for order ${orderId} with ${tickets.length} tickets`);
+
+        // Get the current round's winning numbers
+        // NOTE: This is a simplified example. In production, you would:
+        // 1. Fetch the actual draw results from the database
+        // 2. Implement proper prize tier matching logic
+        // 3. Update ticket statuses and notify winners
+
+        const winningTickets: string[] = [];
+        const totalWinnings = 0;
+
+        // Example: Check against mock winning numbers
+        // const winningNumbers = await this.getWinningNumbers();
+        // for (const ticket of tickets) {
+        //   if (winningNumbers.includes(ticket.ticketNumber)) {
+        //     winningTickets.push(ticket.ticketNumber);
+        //     totalWinnings += this.calculatePrize(ticket.ticketNumber, winningNumbers);
+        //   }
+        // }
+
+        if (winningTickets.length > 0) {
+            this.logger.log(`🎉 Order ${orderId} has ${winningTickets.length} winning tickets!`);
+
+            // TODO: Send notification to user
+            // TODO: Update order status with winning information
+            // TODO: Initiate prize payout process
+        } else {
+            this.logger.log(`Order ${orderId} has no winning tickets`);
+        }
+
+        return {
+            orderId,
+            ticketsChecked: tickets.length,
+            winningTickets,
+            totalWinnings,
+        };
+    }
+
+    /**
+     * Check prizes for all paid orders
+     */
+    private async checkAllPaidOrders() {
+        this.logger.log('Checking prizes for all paid orders');
+
+        const paidOrders = await this.prisma.order.findMany({
+            where: {
+                status: 'PAID',
+            },
+            include: {
+                tickets: true,
+                user: true,
+            },
+        });
+
+        this.logger.log(`Found ${paidOrders.length} paid orders to check`);
+
+        const results = [];
+
+        for (const order of paidOrders) {
+            const result = await this.checkOrderPrizes({
+                orderId: order.id,
+                userId: order.userId,
+                tickets: order.tickets.map(t => ({
+                    ticketNumber: t.ticketNumber,
+                    price: t.price,
+                })),
+            });
+            results.push(result);
+        }
+
+        return {
+            totalOrders: paidOrders.length,
+            results,
+        };
+    }
+
+    @OnWorkerEvent('completed')
+    onCompleted(job: Job) {
+        this.logger.log(`Job ${job.id} completed successfully`);
+    }
+
+    @OnWorkerEvent('failed')
+    onFailed(job: Job, error: Error) {
+        this.logger.error(`Job ${job.id} failed with error: ${error.message}`);
+    }
+
+    @OnWorkerEvent('active')
+    onActive(job: Job) {
+        this.logger.debug(`Job ${job.id} is now active`);
+    }
+}

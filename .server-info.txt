@@ -1,0 +1,48 @@
+# ข้อมูล VPS Server - Hostinger
+# ⚠️ ไฟล์นี้มี password - อย่า commit ขึ้น Git!
+
+## ข้อมูลการเชื่อมต่อ
+IP_ADDRESS=76.13.18.170
+HOSTNAME=srv1269924.hstgr.cloud
+USERNAME=root
+PASSWORD=bcgAxlDCfwC?yv)FY3&A
+SSH_PORT=22
+
+## ข้อมูล Server
+LOCATION=Indonesia - Jakarta
+OS=Ubuntu 24.04 LTS
+PACKAGE=KVM 2 (8GB RAM, 100GB NVMe)
+
+## คำสั่ง SSH
+ssh root@76.13.18.170
+# หรือใช้ hostname:
+ssh root@srv1269924.hstgr.cloud
+
+## ข้อมูล Database (หลัง setup)
+DB_NAME=lottery_db
+DB_USER=lottery_user
+DB_PASSWORD=L0ttery@2024!Strong
+DB_HOST=localhost
+DB_PORT=5432
+
+## Domain (ถ้ามี)
+DOMAIN=ยังไม่ได้ตั้งค่า
+# เมื่อมี domain แล้ว ให้ชี้ A Record ไปที่ 76.13.18.170
+
+## สถานะการ Setup
+- [x] สร้าง VPS เรียบร้อย
+- [x] ได้ IP Address และ credentials
+- [ ] SSH เข้า server ครั้งแรก
+- [ ] รัน setup script
+- [ ] อัพโหลดโค้ด
+- [ ] สร้างไฟล์ .env
+- [ ] Build โปรเจค
+- [ ] Run ด้วย PM2
+- [ ] ตั้งค่า Nginx
+- [ ] ตั้งค่า Domain (A Record)
+- [ ] ติดตั้ง SSL Certificate
+
+## หมายเหตุ
+- Server ตั้งอยู่ที่ Jakarta (ใกล้ไทย ping ประมาณ 40-60ms)
+- Ubuntu 24.04 LTS เป็น version ใหม่ล่าสุด (รองรับนานถึง 2034)
+- Hostname สามารถใช้แทน IP ได้ (สะดวกกว่าจำ IP)

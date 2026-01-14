@@ -1,0 +1,26 @@
+import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
+import { PrizeCheckProcessor } from './prize-check.processor';
+import { QueueService } from './queue.service';
+import { OrderModule } from '../order/order.module';
+import { LotteryModule } from '../lottery/lottery.module';
+
+@Module({
+    imports: [
+        BullModule.forRoot({
+            connection: {
+                host: process.env.REDIS_HOST || 'localhost',
+                port: parseInt(process.env.REDIS_PORT || '6379'),
+                password: process.env.REDIS_PASSWORD,
+            },
+        }),
+        BullModule.registerQueue({
+            name: 'prize-check',
+        }),
+        OrderModule,
+        LotteryModule,
+    ],
+    providers: [PrizeCheckProcessor, QueueService],
+    exports: [QueueService],
+})
+export class QueueModule { }

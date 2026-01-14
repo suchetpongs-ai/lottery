@@ -1,0 +1,79 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+
+export interface PrizeCheckJob {
+    orderId: number;
+    userId: number;
+    tickets: Array<{
+        ticketNumber: string;
+        price: number;
+    }>;
+}
+
+@Injectable()
+export class QueueService {
+    private readonly logger = new Logger(QueueService.name);
+
+    constructor(
+        @InjectQueue('prize-check') private prizeCheckQueue: Queue,
+    ) { }
+
+    /**
+     * Add a prize check job to the queue
+     * This will be called after a user successfully pays for their order
+     */
+    async addPrizeCheckJob(data: PrizeCheckJob, delayMs: number = 0) {
+        this.logger.log(`Adding prize check job for order ${data.orderId}`);
+
+        return await this.prizeCheckQueue.add('check-prizes', data, {
+            delay: delayMs,
+            attempts: 3,
+            backoff: {
+                type: 'exponential',
+                delay: 60000, // Start with 1 minute
+            },
+            removeOnComplete: {
+                age: 3600, // Keep completed jobs for 1 hour
+                count: 100, // Keep last 100 completed jobs
+            },
+            removeOnFail: {
+                age: 86400, // Keep failed jobs for 24 hours
+            },
+        });
+    }
+
+    /**
+     * Schedule automated prize checking for all paid orders
+     * This should run after lottery draw results are announced
+     */
+    async scheduleAllPrizeChecks() {
+        this.logger.log('Scheduling prize checks for all paid orders');
+        // This will be called manually or via admin API after draw results are available
+        return await this.prizeCheckQueue.add(
+            'check-all-prizes',
+            {},
+            {
+                attempts: 1,
+            },
+        );
+    }
+
+    /**
+     * Get queue statistics
+     */
+    async getQueueStats() {
+        const waiting = await this.prizeCheckQueue.getWaitingCount();
+        const active = await this.prizeCheckQueue.getActiveCount();
+        const completed = await this.prizeCheckQueue.getCompletedCount();
+        const failed = await this.prizeCheckQueue.getFailedCount();
+
+        return {
+            waiting,
+            active,
+            completed,
+            failed,
+            total: waiting + active + completed + failed,
+        };
+    }
+}

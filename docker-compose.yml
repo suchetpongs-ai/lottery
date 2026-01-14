@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: lottery-api
+    restart: always
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./db_data:/app/apps/api/prisma
+    environment:
+      - DATABASE_URL=file:/app/apps/api/prisma/dev.db
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=3001
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3001/api # Adjust for public domain
+    container_name: lottery-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:3001/api # Internal docker network
+    depends_on:
+      - api

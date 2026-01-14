@@ -1,0 +1,205 @@
+{
+    "nav": {
+        "home": "Home",
+        "browse": "Browse Tickets",
+        "orders": "My Orders",
+        "results": "Check Results",
+        "login": "Login",
+        "logout": "Logout",
+        "admin": "Admin"
+    },
+    "home": {
+        "title": "Digital Lottery",
+        "subtitle": "Online Government Lottery System",
+        "description": "Buy government lottery online - Safe, Fast, Auto Prize Check",
+        "searchPlaceholder": "Search lottery number, e.g. 123456",
+        "searchButton": "Search",
+        "features": {
+            "title": "Why Choose Us",
+            "secure": {
+                "title": "100% Secure",
+                "description": "High-level security system"
+            },
+            "fast": {
+                "title": "Fast",
+                "description": "Buy lottery in just a few clicks"
+            },
+            "auto": {
+                "title": "Auto Prize Check",
+                "description": "Instant notification when you win"
+            }
+        },
+        "howItWorks": {
+            "title": "How It Works",
+            "step1": {
+                "title": "Register",
+                "description": "Free registration with just a phone number"
+            },
+            "step2": {
+                "title": "Browse Tickets",
+                "description": "Search and choose your favorite numbers"
+            },
+            "step3": {
+                "title": "Payment",
+                "description": "Pay via QR Code or credit card"
+            },
+            "step4": {
+                "title": "Wait for Results",
+                "description": "Auto check and notification"
+            }
+        },
+        "cta": {
+            "title": "Ready to Start?",
+            "description": "Buy lottery online today",
+            "button": "Get Started"
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "Login",
+            "phone": "Phone Number",
+            "phonePlaceholder": "0812345678",
+            "password": "Password",
+            "passwordPlaceholder": "Your password",
+            "submit": "Login",
+            "noAccount": "Don't have an account?",
+            "register": "Register",
+            "error": "Invalid phone number or password"
+        },
+        "register": {
+            "title": "Register",
+            "username": "Username",
+            "usernamePlaceholder": "Your name",
+            "phone": "Phone Number",
+            "phonePlaceholder": "0812345678",
+            "password": "Password",
+            "passwordPlaceholder": "Password (at least 6 characters)",
+            "confirmPassword": "Confirm Password",
+            "confirmPasswordPlaceholder": "Re-enter password",
+            "submit": "Register",
+            "haveAccount": "Already have an account?",
+            "login": "Login"
+        }
+    },
+    "browse": {
+        "title": "Browse Tickets",
+        "searchPlaceholder": "Search lottery number, e.g. 123456",
+        "searchButton": "Search",
+        "filterAll": "All",
+        "filterExact": "Exact Match",
+        "filterPrefix": "Starts With",
+        "filterSuffix": "Ends With",
+        "noResults": "No tickets found",
+        "tryAgain": "Try another number",
+        "price": "Price",
+        "baht": "THB",
+        "set": "Set",
+        "addToCart": "Add to Cart",
+        "inCart": "In Cart"
+    },
+    "cart": {
+        "title": "Shopping Cart",
+        "empty": "Cart is empty",
+        "items": "Items",
+        "total": "Total",
+        "baht": "THB",
+        "checkout": "Proceed to Checkout",
+        "continueShopping": "Continue Shopping"
+    },
+    "checkout": {
+        "title": "Checkout",
+        "summary": "Order Summary",
+        "ticketNumber": "Ticket Number",
+        "price": "Price",
+        "baht": "THB",
+        "total": "Grand Total",
+        "timeRemaining": "Time Remaining",
+        "minutes": "minutes",
+        "confirmPayment": "Confirm Payment",
+        "paymentSuccess": "Payment Successful",
+        "orderPlaced": "Order Placed Successfully"
+    },
+    "orders": {
+        "title": "My Orders",
+        "noOrders": "No orders yet",
+        "orderNumber": "Order #",
+        "date": "Date",
+        "status": "Status",
+        "total": "Total",
+        "baht": "THB",
+        "viewDetails": "View Details",
+        "statusPending": "Pending Payment",
+        "statusPaid": "Paid",
+        "statusExpired": "Expired"
+    },
+    "common": {
+        "loading": "Loading...",
+        "error": "Error occurred",
+        "success": "Success",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "close": "Close",
+        "save": "Save",
+        "edit": "Edit",
+        "delete": "Delete",
+        "search": "Search",
+        "filter": "Filter",
+        "sort": "Sort",
+        "next": "Next",
+        "previous": "Previous",
+        "backToHome": "Back to Home"
+    },
+    "results": {
+        "pageTitle": "Government Lottery Results",
+        "pageSubtitle": "Check past lottery results",
+        "noResults": "No results announced yet",
+        "checkTitle": "Check Lottery Instantly",
+        "selectRound": "Select Draw Date",
+        "inputLabel": "Enter 6-digit number",
+        "inputPlaceholder": "e.g. 123456",
+        "checkButton": "Check Result",
+        "checking": "Checking...",
+        "prize": "Prize",
+        "prize1": "1st Prize",
+        "prizeNearby": "prize nearby 1st prize",
+        "prize3Front": "3-Digit Front",
+        "prize3Back": "3-Digit Back",
+        "prize2": "2-Digit Back",
+        "prizeAmount": "Prize Amount",
+        "prizePerTicket": "Prize per ticket",
+        "baht": "THB",
+        "drawDate": "Draw Date",
+        "drawDateLabel": "Draw Date",
+        "checkedNumber": "Checked Number",
+        "resultWinner": "Congratulations! You won",
+        "resultLoser": "Sorry, not a winning number",
+        "errorCheck": "Error checking result",
+        "errorInput": "Please enter 6 digits",
+        "errorSelect": "Please select a round"
+    },
+    "footer": {
+        "about": {
+            "title": "About Us",
+            "description": "Secure, fast, and automated digital lottery platform."
+        },
+        "menu": {
+            "title": "Main Menu",
+            "home": "Home",
+            "browse": "Browse Tickets",
+            "orders": "My Orders"
+        },
+        "legal": {
+            "title": "Terms & Policies",
+            "terms": "Terms of Service",
+            "privacy": "Privacy Policy"
+        },
+        "contact": {
+            "title": "Contact Us",
+            "email": "Email: support@lottery-digital.com",
+            "phone": "Tel: 02-xxx-xxxx",
+            "adultsOnly": "18+ Only"
+        },
+        "copyright": "© {year} Digital Lottery. All rights reserved.",
+        "builtWith": "Built with ❤️ in Thailand 🇹🇭"
+    }
+}
