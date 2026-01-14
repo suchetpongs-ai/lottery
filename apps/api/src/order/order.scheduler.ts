@@ -65,7 +65,7 @@ export class OrderScheduler {
             if ([30, 15, 5, 1].includes(minutesLeft)) {
                 await this.notificationService.createNotification(
                     order.userId,
-                    'ORDER_EXPIRING',
+                    NotificationType.ORDER_EXPIRING,
                     'คำสั่งซื้อใกล้หมดอายุ! ⏰',
                     `คำสั่งซื้อ #${order.id} จะหมดอายุในอีก ${minutesLeft} นาที กรุณาชำระเงินโดยเร็ว`,
                     { orderId: Number(order.id), minutesLeft },
