@@ -6,7 +6,6 @@ import { CartIcon } from './CartIcon';
 import { CartSidebar } from './CartSidebar';
 import { LanguageSwitcher } from '../layout/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
-
 import { UserMenu } from '../layout/UserMenu';
 
 export function Navbar() {
@@ -66,15 +65,13 @@ export function Navbar() {
                         </div>
                     </div>
                 </div>
-            </div>
-        </nav >
+            </nav>
 
-            {/* Cart Sidebar */ }
-            < CartSidebar isOpen = { isCartOpen } onClose = {() => setIsCartOpen(false)
-} />
+            {/* Cart Sidebar */}
+            <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
-{/* Spacer for fixed navbar */ }
-<div className="h-16"></div>
+            {/* Spacer for fixed navbar */}
+            <div className="h-16"></div>
         </>
     );
 }
