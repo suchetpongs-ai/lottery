@@ -86,6 +86,11 @@ npm install
 echo "🔨 Generating Prisma Client..."
 export DATABASE_URL="postgresql://lottery_user:lottery_pass_2024@localhost:5432/lottery_db"
 cd apps/api
+
+# Force PostgreSQL for Production
+echo "🔄 Switching Database provider to PostgreSQL..."
+sed -i 's/provider = "sqlite"/provider = "postgresql"/g' prisma/schema.prisma
+
 npx prisma generate
 
 # 11. Push database schema
