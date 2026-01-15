@@ -1,4 +1,4 @@
-import { useMutation, UseMutationResult, useQuery } from '@tanstack/react-query';
+import { useMutation, UseMutationResult, useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../client';
 
 interface RegisterData {
@@ -23,6 +23,8 @@ interface AuthResponse {
 }
 
 export function useRegister(): UseMutationResult<AuthResponse, Error, RegisterData> {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: async (data: RegisterData) => {
             const response = await apiClient.post('/auth/register', data);
@@ -32,10 +34,16 @@ export function useRegister(): UseMutationResult<AuthResponse, Error, RegisterDa
             }
             return response.data;
         },
+        onSuccess: (data) => {
+            queryClient.setQueryData(['user'], data.user);
+            queryClient.invalidateQueries({ queryKey: ['user'] });
+        },
     });
 }
 
 export function useLogin(): UseMutationResult<AuthResponse, Error, LoginData> {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: async (data: LoginData) => {
             const response = await apiClient.post('/auth/login', data);
@@ -44,6 +52,10 @@ export function useLogin(): UseMutationResult<AuthResponse, Error, LoginData> {
                 localStorage.setItem('authToken', response.data.accessToken);
             }
             return response.data;
+        },
+        onSuccess: (data) => {
+            queryClient.setQueryData(['user'], data.user);
+            queryClient.invalidateQueries({ queryKey: ['user'] });
         },
     });
 }

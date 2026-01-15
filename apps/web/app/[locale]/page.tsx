@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { useUser } from '@/lib/api/hooks/useAuth';
 
 export default function Home() {
+  const { data: user } = useUser();
   const [searchNumber, setSearchNumber] = useState('');
 
   const featuredNumbers = ['123456', '789012', '345678', '901234', '567890', '234567'];
@@ -68,11 +70,21 @@ export default function Home() {
                 เลือกซื้อสลาก
               </Button>
             </Link>
-            <Link href="/register">
-              <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
-                สมัครสมาชิก
-              </Button>
-            </Link>
+
+            {/* Show Register button only if not logged in */}
+            {!user ? (
+              <Link href="/register">
+                <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
+                  สมัครสมาชิก
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/orders">
+                <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
+                  คำสั่งซื้อของฉัน
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
