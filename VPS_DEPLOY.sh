@@ -80,6 +80,8 @@ EOF
 
 # 9. Install dependencies
 echo "📦 Installing dependencies..."
+rm -rf node_modules
+rm -rf package-lock.json
 npm install
 
 # 10. Generate Prisma Client
