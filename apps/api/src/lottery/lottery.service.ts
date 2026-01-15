@@ -12,16 +12,15 @@ export class LotteryService {
 
         const skip = (page - 1) * limit;
 
-        // สร้าง where condition
-        const where: any = {
-            status: 'Available', // ดึงเฉพาะสลากที่ว่าง
+        // Common where conditions
+        let where: any = {
+            status: 'Available',
         };
 
-        // ถ้าระบุงวด
+        // Round ID logic
         if (roundId) {
             where.roundId = roundId;
         } else {
-            // ถ้าไม่ระบุงวด ใช้งวดล่าสุดที่เปิดขาย
             const activeRound = await this.prisma.round.findFirst({
                 where: { status: 'Open' },
                 orderBy: { drawDate: 'desc' },
@@ -32,17 +31,78 @@ export class LotteryService {
             }
         }
 
-        // ถ้าระบุเลข ให้ค้นหาตามประเภท
+        // Search logic
         if (number) {
-            if (searchType === 'exact') {
-                where.number = number;
-            } else if (searchType === 'prefix') {
-                where.number = { startsWith: number };
-            } else if (searchType === 'suffix') {
-                where.number = { endsWith: number };
+            // Check if number contains wildcards (underscores or empty positions passed as underscores)
+            if (number.includes('_')) {
+                // Use Raw SQL for pattern matching with LIKE operator
+                // Note: We use Prisma's raw query to leverage specific database capabilities if needed,
+                // but standard SQL LIKE works for both SQLite and Postgres with '_' wildcard.
+                const pattern = number; // e.g. "1_2__6"
+
+                // We need to query IDs first because relation inclusion in raw query is complex
+                // Assuming table names match model names but are mapped? Prisma standard is PascalCase usually unless mapped.
+                // Let's rely on standard 'Ticket' table. If mapping exists, it might be different.
+                // To be safe, we can try to use prisma.ticket.findMany with a raw WHERE clause if possible, but it's not.
+                // Alternatively, fetch IDs via raw query.
+
+                // Construct the raw query.
+                // We also need to filter by status and roundId which we already determined.
+                // BigInt handling: queryRaw returns serialized BigInts usually.
+
+                const roundIdVal = where.roundId;
+
+                // Use a direct query for IDs first
+                const matchingIds = await this.prisma.$queryRaw<{ id: bigint }[]>`
+                    SELECT id FROM "Ticket" 
+                    WHERE status = 'Available' 
+                    AND "roundId" = ${roundIdVal}
+                    AND number LIKE ${pattern}
+                    ORDER BY number ASC
+                    LIMIT ${limit} OFFSET ${skip}
+                `;
+
+                const totalCountResult = await this.prisma.$queryRaw<{ count: bigint }[]>`
+                    SELECT COUNT(*) as count FROM "Ticket" 
+                    WHERE status = 'Available' 
+                    AND "roundId" = ${roundIdVal}
+                    AND number LIKE ${pattern}
+                `;
+
+                const total = Number(totalCountResult[0]?.count || 0);
+
+                // Now fetch the full entities with relations using standard Prisma
+                const ids = matchingIds.map(r => r.id);
+
+                const tickets = await this.prisma.ticket.findMany({
+                    where: { id: { in: ids } },
+                    include: { round: true },
+                    orderBy: { number: 'asc' }
+                });
+
+                return {
+                    data: tickets,
+                    pagination: {
+                        page,
+                        limit,
+                        total,
+                        totalPages: Math.ceil(total / limit),
+                    },
+                };
+
+            } else {
+                // Standard search (Exact/Prefix/Suffix)
+                if (searchType === 'exact') {
+                    where.number = number;
+                } else if (searchType === 'prefix') {
+                    where.number = { startsWith: number };
+                } else if (searchType === 'suffix') {
+                    where.number = { endsWith: number };
+                }
             }
         }
 
+        // Execute standard query if not wildcard
         const [tickets, total] = await Promise.all([
             this.prisma.ticket.findMany({
                 where,

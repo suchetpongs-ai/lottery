@@ -1,0 +1,54 @@
+# ========================================
+# 🐞 คำสั่ง Deploy ครั้งที่ 7 (Debug Adapter)
+# ========================================
+# เป้าหมาย: ติดตั้ง pg adapter และ dependencies ให้ครบถ้วน
+# การเปลี่ยนแปลง:
+# 1. ติดตั้ง 'pg' และ '@prisma/adapter-pg'
+# 2. Rebuild API ใหม่
+
+bash << 'DEPLOYEOF'
+#!/bin/bash
+set -e
+
+echo "=========================================="
+echo "🐞 Deploy ครั้งที่ 7 - Adapter & Deps"
+echo "=========================================="
+
+echo ""
+echo "📦 [1/4] กำลังดึงโค้ดล่าสุด..."
+cd /var/www/lottery
+git pull origin main
+
+echo ""
+echo "🧹 [2/4] กำลังติดตั้ง dependencies..."
+cd apps/api
+# ลบ package ที่อาจจะตีกันและติดตั้ง adapter-pg
+npm uninstall @prisma/adapter-libsql @libsql/client better-sqlite3
+npm install pg @prisma/adapter-pg dotenv
+# ติดตั้งตัวอื่นให้ครบ
+npm install
+
+echo ""
+echo "🏗️  [3/4] กำลัง Rebuild API..."
+# ลบ cache prisma
+rm -rf node_modules/.prisma
+npx prisma generate
+npm run build
+
+echo ""
+echo "🚀 [4/4] กำลัง Restart Services..."
+pm2 restart lottery-api --update-env
+
+echo ""
+echo "⏳ รอ start 10 วินาที..."
+sleep 10
+
+echo ""
+echo "📋 ดู Logs ล่าสุด:"
+pm2 logs lottery-api --lines 30 --nostream
+
+echo ""
+echo "=========================================="
+echo "หวังว่ารอบนี้จะเจอ '✅ Connected' นะครับ!"
+echo "=========================================="
+DEPLOYEOF

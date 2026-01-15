@@ -8,22 +8,24 @@ import { z } from 'zod';
 import { useRegister } from '@/lib/api/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-
-const registerSchema = z.object({
-    username: z.string().min(3, 'ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร'),
-    phoneNumber: z.string().min(10, 'กรุณากรอกเบอร์โทรศัพท์ให้ครบถ้วน'),
-    password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'),
-    confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: 'รหัสผ่านไม่ตรงกัน',
-    path: ['confirmPassword'],
-});
-
-type RegisterForm = z.infer<typeof registerSchema>;
+import { useTranslations } from 'next-intl';
 
 export default function RegisterPage() {
     const router = useRouter();
     const registerMutation = useRegister();
+    const t = useTranslations('auth.register');
+
+    const registerSchema = z.object({
+        username: z.string().min(3, t('errors.usernameLength')),
+        phoneNumber: z.string().min(10, t('errors.phoneLength')),
+        password: z.string().min(6, t('errors.passwordLength')),
+        confirmPassword: z.string(),
+    }).refine((data) => data.password === data.confirmPassword, {
+        message: t('errors.passwordMismatch'),
+        path: ['confirmPassword'],
+    });
+
+    type RegisterForm = z.infer<typeof registerSchema>;
 
     const {
         register,
@@ -59,10 +61,10 @@ export default function RegisterPage() {
                     {/* Header */}
                     <div className="text-center mb-8">
                         <h1 className="text-4xl font-heading font-bold text-gradient mb-2">
-                            สมัครสมาชิก
+                            {t('title')}
                         </h1>
                         <p className="text-gray-400">
-                            เริ่มต้นซื้อสลากออนไลน์วันนี้
+                            {t('subtitle')}
                         </p>
                     </div>
 
@@ -70,9 +72,9 @@ export default function RegisterPage() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                         <Input
                             {...register('username')}
-                            label="ชื่อผู้ใช้"
+                            label={t('username')}
                             type="text"
-                            placeholder="username"
+                            placeholder={t('usernamePlaceholder')}
                             error={errors.username?.message}
                             icon={
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,9 +85,9 @@ export default function RegisterPage() {
 
                         <Input
                             {...register('phoneNumber')}
-                            label="เบอร์โทรศัพท์"
+                            label={t('phone')}
                             type="tel"
-                            placeholder="0812345678"
+                            placeholder={t('phonePlaceholder')}
                             error={errors.phoneNumber?.message}
                             icon={
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,9 +98,9 @@ export default function RegisterPage() {
 
                         <Input
                             {...register('password')}
-                            label="รหัสผ่าน"
+                            label={t('password')}
                             type="password"
-                            placeholder="••••••••"
+                            placeholder={t('passwordPlaceholder')}
                             error={errors.password?.message}
                             showPasswordToggle
                             icon={
@@ -110,9 +112,9 @@ export default function RegisterPage() {
 
                         <Input
                             {...register('confirmPassword')}
-                            label="ยืนยันรหัสผ่าน"
+                            label={t('confirmPassword')}
                             type="password"
-                            placeholder="••••••••"
+                            placeholder={t('confirmPasswordPlaceholder')}
                             error={errors.confirmPassword?.message}
                             showPasswordToggle
                             icon={
@@ -137,7 +139,7 @@ export default function RegisterPage() {
                             className="w-full"
                             isLoading={registerMutation.isPending}
                         >
-                            สมัครสมาชิก
+                            {t('submit')}
                         </Button>
                     </form>
 
@@ -147,19 +149,19 @@ export default function RegisterPage() {
                             <div className="w-full border-t border-white/10"></div>
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="px-4 bg-secondary-800 text-gray-400">หรือ</span>
+                            <span className="px-4 bg-secondary-800 text-gray-400">{t('or')}</span>
                         </div>
                     </div>
 
                     {/* Login Link */}
                     <div className="text-center">
                         <p className="text-gray-400">
-                            มีบัญชีอยู่แล้ว?{' '}
+                            {t('haveAccount')}{' '}
                             <Link
                                 href="/login"
                                 className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
                             >
-                                เข้าสู่ระบบ
+                                {t('login')}
                             </Link>
                         </p>
                     </div>
@@ -167,7 +169,7 @@ export default function RegisterPage() {
 
                 {/* Footer */}
                 <p className="text-center mt-6 text-sm text-gray-500">
-                    ระบบสลากกินแบ่งรัฐบาลออนไลน์
+                    {t('footer')}
                 </p>
             </div>
         </div>

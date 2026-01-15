@@ -1,15 +1,16 @@
 # ========================================
-# 🚀 คำสั่ง Deploy Lottery Platform บน VPS
+# 🚀 คำสั่ง Deploy ครั้งที่ 4 (The Real Final Fix)
 # ========================================
-# วิธีใช้: Copy ทั้งหมดแล้ววางใน SSH terminal ของ VPS (76.13.18.170)
-# เวลาที่ใช้: ประมาณ 5-10 นาที
+# ปัญหา: Prisma 7 ต้องการ file prisma.config.ts เมื่อไม่มี url ใน schema แต่ไฟล์เดิมถูกลบไป
+# แก้ไข: สร้าง prisma.config.ts ใหม่ ที่อ่าน DATABASE_URL จาก environment แทนที่จะ hardcode
+# สิ่งที่ต้องทำ: รันคำสั่งนี้เพื่อ deploy ใหม่
 
 bash << 'DEPLOYEOF'
 #!/bin/bash
 set -e
 
 echo "=========================================="
-echo "🧹 เริ่มติดตั้งใหม่ทั้งหมด (Fresh Installation)"
+echo "🚀 Deploy ครั้งที่ 4 - The Real Final Fix"
 echo "=========================================="
 
 # ========================================
@@ -30,42 +31,16 @@ rm -rf /var/www/lottery /var/www/lottery_old
 echo "✅ ลบไฟล์เก่าสำเร็จ"
 
 # ========================================
-# ขั้นตอนที่ 3: รีเซ็ต PostgreSQL Database
+# ขั้นตอนที่ 3: Skip Database Reset
 # ========================================
 echo ""
-echo "🗄️  [3/10] กำลังรีเซ็ต PostgreSQL database..."
-sudo -u postgres psql << 'SQL'
-DROP DATABASE IF EXISTS lottery_db;
-DROP USER IF EXISTS lottery_user;
-CREATE DATABASE lottery_db;
-CREATE USER lottery_user WITH ENCRYPTED PASSWORD 'lottery_pass_2024';
-GRANT ALL PRIVILEGES ON DATABASE lottery_db TO lottery_user;
-\c lottery_db
-GRANT ALL ON SCHEMA public TO lottery_user;
-SQL
-echo "✅ สร้าง database และ user สำเร็จ"
+echo "⏭️  [3/10] ข้าม - Database ยังอยู่เหมือนเดิม"
 
 # ========================================
-# ขั้นตอนที่ 4: ตั้งค่า PostgreSQL Authentication
+# ขั้นตอนที่ 4: ทดสอบการเชื่อมต่อ Database
 # ========================================
 echo ""
-echo "🔐 [4/10] กำลังตั้งค่า PostgreSQL authentication..."
-sudo bash -c 'cat > /tmp/pg_hba.conf << "PG"
-local   all             postgres                                peer
-local   all             all                                     md5
-host    all             all             127.0.0.1/32            md5
-host    all             all             ::1/128                 md5
-PG'
-sudo cp /tmp/pg_hba.conf /etc/postgresql/*/main/pg_hba.conf
-sudo systemctl restart postgresql
-sleep 3
-echo "✅ ตั้งค่า authentication สำเร็จ"
-
-# ========================================
-# ขั้นตอนที่ 5: ทดสอบการเชื่อมต่อ Database
-# ========================================
-echo ""
-echo "🧪 [5/10] กำลังทดสอบการเชื่อมต่อ PostgreSQL..."
+echo "🧪 [4/10] กำลังทดสอบการเชื่อมต่อ PostgreSQL..."
 PGPASSWORD=lottery_pass_2024 psql -U lottery_user -h localhost -d lottery_db -c "SELECT 1;" || { 
     echo "❌ ไม่สามารถเชื่อมต่อ database ได้!"; 
     exit 1; 
@@ -73,20 +48,28 @@ PGPASSWORD=lottery_pass_2024 psql -U lottery_user -h localhost -d lottery_db -c 
 echo "✅ เชื่อมต่อ database สำเร็จ!"
 
 # ========================================
-# ขั้นตอนที่ 6: Clone โค้ดจาก GitHub
+# ขั้นตอนที่ 5: Clone โค้ดจาก GitHub (ล่าสุด)
 # ========================================
 echo ""
-echo "📦 [6/10] กำลัง clone repository จาก GitHub..."
+echo "📦 [5/10] กำลัง clone repository ล่าสุดจาก GitHub..."
 cd /var/www
 git clone https://github.com/suchetpongs-ai/lottery.git
 cd lottery
 echo "✅ Clone repository สำเร็จ"
 
+# ตรวจสอบว่ามี prisma.config.ts และไม่มี url hardcode
+if grep -q "file:./dev.db" apps/api/prisma.config.ts; then
+    echo "❌ ไฟล์ prisma.config.ts ยังผิดอยู่ (มี file:./dev.db)!"
+    exit 1
+else
+    echo "✅ ตรวจสอบ prisma.config.ts: ถูกต้อง (ใช้ process.env.DATABASE_URL)"
+fi
+
 # ========================================
-# ขั้นตอนที่ 7: สร้างไฟล์ Environment Variables
+# ขั้นตอนที่ 6: สร้างไฟล์ Environment Variables
 # ========================================
 echo ""
-echo "📝 [7/10] กำลังสร้างไฟล์ .env..."
+echo "📝 [6/10] กำลังสร้างไฟล์ .env..."
 
 # สร้าง .env สำหรับ API
 cat > apps/api/.env << 'ENV'
@@ -105,26 +88,31 @@ ENV
 echo "✅ สร้างไฟล์ .env สำเร็จ"
 
 # ========================================
-# ขั้นตอนที่ 8: ติดตั้ง Dependencies และ Build
+# ขั้นตอนที่ 7: ติดตั้ง Dependencies
 # ========================================
 echo ""
-echo "📦 [8/10] กำลังติดตั้ง dependencies (จะใช้เวลาสักครู่)..."
+echo "📦 [7/10] กำลังติดตั้ง dependencies (จะใช้เวลาสักครู่)..."
 npm install
 
+# ========================================
+# ขั้นตอนที่ 8: Prisma Setup และ Build
+# ========================================
 echo ""
-echo "🔨 กำลังตั้งค่า Prisma และ generate client..."
+echo "🔨 [8/10] กำลังตั้งค่า Prisma..."
 export DATABASE_URL="postgresql://lottery_user:lottery_pass_2024@localhost:5432/lottery_db"
+
 cd apps/api
+echo "  → กำลัง generate Prisma Client..."
 npx prisma generate
+
+echo "  → กำลัง push schema ไปยัง database..."
 npx prisma db push --accept-data-loss
 
-echo ""
-echo "🏗️  กำลัง build API..."
+echo "  → กำลัง build API..."
 npm run build
 
-echo ""
-echo "🏗️  กำลัง build Web..."
 cd ../web
+echo "  → กำลัง build Web..."
 npm run build
 echo "✅ Build ทั้งหมดสำเร็จ"
 
@@ -137,7 +125,7 @@ echo "🚀 [9/10] กำลังเริ่มต้น services..."
 cd /var/www/lottery/apps/api
 pm2 start dist/src/main.js --name lottery-api
 
-cd ../web
+cd /var/www/lottery/apps/web
 pm2 start npm --name lottery-web -- start
 
 pm2 save

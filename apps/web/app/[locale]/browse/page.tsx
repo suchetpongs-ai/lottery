@@ -6,23 +6,23 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { TicketCard } from '@/components/lottery/TicketCard';
 import { Button } from '@/components/ui/Button';
 import { useSearchTickets, useCurrentRound } from '@/lib/api/hooks/useLottery';
-
-type SearchType = 'exact' | 'prefix' | 'suffix';
+import { useTranslations } from 'next-intl';
+import { LotterySearchPanel } from '@/components/lottery/LotterySearchPanel';
 
 export default function BrowsePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const initialNumber = searchParams.get('number') || '';
+    const t = useTranslations('browse');
+    const tCommon = useTranslations('common');
 
     const [searchNumber, setSearchNumber] = useState(initialNumber);
-    const [searchType, setSearchType] = useState<SearchType>('exact');
     const [page, setPage] = useState(1);
     const limit = 12;
 
     const { data: currentRound } = useCurrentRound();
     const { data: searchResult, isLoading } = useSearchTickets({
         number: searchNumber,
-        searchType: searchNumber ? searchType : undefined,
         page,
         limit,
     });
@@ -31,9 +31,19 @@ export default function BrowsePage() {
     const total = searchResult?.pagination?.total || 0;
     const totalPages = Math.ceil(total / limit);
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        setPage(1); // Reset to first page on new search
+    const handleSearch = (pattern: string) => {
+        setSearchNumber(pattern);
+        setPage(1); // Reset to first page
+
+        // Update URL query param for shareability
+        // Logic to construct new URL
+        const params = new URLSearchParams(searchParams);
+        if (pattern && pattern.replace(/_/g, '').length > 0) {
+            params.set('number', pattern);
+        } else {
+            params.delete('number');
+        }
+        router.push(`/browse?${params.toString()}`);
     };
 
     return (
@@ -42,10 +52,10 @@ export default function BrowsePage() {
                 {/* Header */}
                 <div className="mb-12">
                     <h1 className="text-5xl font-heading font-bold text-gradient mb-4">
-                        เลือกซื้อสลาก
+                        {t('title')}
                     </h1>
                     <p className="text-gray-400 text-lg">
-                        ค้นหาและเลือกเลขสลากที่คุณชื่นชอบ
+                        {t('subtitle')}
                     </p>
                     {currentRound && (
                         <div className="mt-4 inline-flex items-center gap-2 glass-card px-4 py-2">
@@ -53,69 +63,37 @@ export default function BrowsePage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             <span className="text-sm text-gray-300">
-                                งวดวันที่ {new Date(currentRound.drawDate).toLocaleDateString('th-TH', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                })}
+                                {t('title') === 'เลือกซื้อสลาก' ? 'งวดวันที่' : 'Draw Date'}{' '}
+                                {new Date(currentRound.drawDate).toLocaleDateString(
+                                    t('title') === 'เลือกซื้อสลาก' ? 'th-TH' : 'en-US',
+                                    {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                    }
+                                )}
                             </span>
                         </div>
                     )}
                 </div>
 
-                {/* Search Bar */}
-                <div className="glass-card p-6 mb-12">
-                    <form onSubmit={handleSearch}>
-                        <div className="flex flex-col md:flex-row gap-4">
-                            {/* Search Type Selector */}
-                            <div className="flex gap-2">
-                                {[
-                                    { value: 'exact' as SearchType, label: 'เลขตรง' },
-                                    { value: 'prefix' as SearchType, label: 'ขึ้นต้นด้วย' },
-                                    { value: 'suffix' as SearchType, label: 'ลงท้ายด้วย' },
-                                ].map((type) => (
-                                    <button
-                                        key={type.value}
-                                        type="button"
-                                        onClick={() => setSearchType(type.value)}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${searchType === type.value
-                                            ? 'bg-primary-500 text-white'
-                                            : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                                            }`}
-                                    >
-                                        {type.label}
-                                    </button>
-                                ))}
-                            </div>
+                {/* 6-Digit Search Panel */}
+                <LotterySearchPanel
+                    initialPattern={initialNumber}
+                    onSearch={handleSearch}
+                />
 
-                            {/* Search Input */}
-                            <div className="flex-1 flex gap-3">
-                                <input
-                                    type="text"
-                                    placeholder="ค้นหาเลขสลาก เช่น 123456"
-                                    value={searchNumber}
-                                    onChange={(e) => setSearchNumber(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    className="flex-1 px-6 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                    maxLength={6}
-                                />
-                                <Button type="submit" variant="primary" size="lg" className="px-8">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    ค้นหา
-                                </Button>
-                            </div>
+                {/* Results Info */}
+                {searchNumber && (
+                    <div className="glass-card mb-8 p-4 text-center">
+                        <div className="text-gray-300">
+                            {t('foundResults', { total })}
                         </div>
-                    </form>
-
-                    {/* Results Info */}
-                    {searchNumber && (
-                        <div className="mt-4 text-sm text-gray-400">
-                            ค้นหา "{searchNumber}" แบบ{searchType === 'exact' ? 'เลขตรง' : searchType === 'prefix' ? 'ขึ้นต้นด้วย' : 'ลงท้ายด้วย'}
-                            {' - '}พบ {total} รายการ
+                        <div className="text-sm text-gray-500 mt-1">
+                            Pattern: {searchNumber}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* Loading State */}
                 {isLoading && (
@@ -210,12 +188,12 @@ export default function BrowsePage() {
                             </svg>
                         </div>
                         <h3 className="text-2xl font-heading font-bold text-white mb-2">
-                            ไม่พบสลากที่ค้นหา
+                            {t('emptyState.title')}
                         </h3>
                         <p className="text-gray-400 mb-6">
                             {searchNumber
-                                ? 'ลองค้นหาด้วยเลขอื่น หรือเปลี่ยนประเภทการค้นหา'
-                                : 'กรุณากรอกเลขสลากที่ต้องการค้นหา'}
+                                ? t('emptyState.descriptionRetry')
+                                : t('emptyState.descriptionStart')}
                         </p>
                         {searchNumber && (
                             <Button
@@ -225,7 +203,7 @@ export default function BrowsePage() {
                                     setPage(1);
                                 }}
                             >
-                                ล้างการค้นหา
+                                {t('clearSearch')}
                             </Button>
                         )}
                     </div>
@@ -238,7 +216,7 @@ export default function BrowsePage() {
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
-                            กลับหน้าแรก
+                            {tCommon('backToHome')}
                         </Button>
                     </Link>
                 </div>

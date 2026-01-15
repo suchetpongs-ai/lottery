@@ -12,6 +12,16 @@
         "title": "Digital Lottery",
         "subtitle": "Online Government Lottery System",
         "description": "Buy government lottery online - Safe, Fast, Auto Prize Check",
+        "heroSubtitle": "Easy to buy, Win prizes, Get paid fast",
+        "heroDescription": "Online government lottery platform - Secure, Fast, Auto Prize Check",
+        "featured": {
+            "title": "Today's Lucky Numbers",
+            "subtitle": "Most popular lottery tickets chosen by users",
+            "ticketLabel": "Ticket No.",
+            "statusAvailable": "Available",
+            "priceLabel": "Price",
+            "viewAll": "View All"
+        },
         "searchPlaceholder": "Search lottery number, e.g. 123456",
         "searchButton": "Search",
         "features": {
@@ -78,11 +88,21 @@
             "confirmPasswordPlaceholder": "Re-enter password",
             "submit": "Register",
             "haveAccount": "Already have an account?",
-            "login": "Login"
+            "login": "Login",
+            "subtitle": "Start buying lottery online today",
+            "or": "Or",
+            "footer": "Online Government Lottery System",
+            "errors": {
+                "usernameLength": "Username must be at least 3 characters",
+                "phoneLength": "Please enter a valid phone number",
+                "passwordLength": "Password must be at least 6 characters",
+                "passwordMismatch": "Passwords do not match"
+            }
         }
     },
     "browse": {
         "title": "Browse Tickets",
+        "subtitle": "Search and choose your favorite lottery numbers",
         "searchPlaceholder": "Search lottery number, e.g. 123456",
         "searchButton": "Search",
         "filterAll": "All",
@@ -95,7 +115,25 @@
         "baht": "THB",
         "set": "Set",
         "addToCart": "Add to Cart",
-        "inCart": "In Cart"
+        "inCart": "In Cart",
+        "clearSearch": "Clear Search",
+        "foundResults": "Found {total} items",
+        "searchType": {
+            "exact": "Exact Match",
+            "prefix": "Starts With",
+            "suffix": "Ends With"
+        },
+        "emptyState": {
+            "title": "No tickets found",
+            "descriptionStart": "Please enter a lottery number to search",
+            "descriptionRetry": "Try searching with a different number or filter"
+        },
+        "searchHint": "Enter digits (leave empty for random)",
+        "quickAction": {
+            "prefix3": "First 3 Digits",
+            "suffix2": "Last 2 Digits",
+            "clear": "Clear"
+        }
     },
     "cart": {
         "title": "Shopping Cart",
@@ -176,6 +214,22 @@
         "errorCheck": "Error checking result",
         "errorInput": "Please enter 6 digits",
         "errorSelect": "Please select a round"
+    },
+    "ticket": {
+        "notFound": "Ticket not found",
+        "back": "Back",
+        "lotteryApi": "Government Lottery API",
+        "roundNo": "Draw No.",
+        "statusAvailable": "Available",
+        "statusReserved": "Reserved",
+        "statusSold": "Sold",
+        "set": "Set",
+        "ticketNumber": "Ticket Number",
+        "drawDate": "Draw Date",
+        "baht": "THB",
+        "inCart": "In Cart",
+        "addToCart": "Add to Cart",
+        "cannotBuy": "Unavailable"
     },
     "footer": {
         "about": {
