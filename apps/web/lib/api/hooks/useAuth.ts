@@ -48,8 +48,10 @@ export function useLogin(): UseMutationResult<AuthResponse, Error, LoginData> {
         mutationFn: async (data: LoginData) => {
             const response = await apiClient.post('/auth/login', data);
             // Store token
+            // in useLogin mutationFn
             if (response.data.accessToken) {
                 localStorage.setItem('authToken', response.data.accessToken);
+                document.cookie = `auth_token=${response.data.accessToken}; path=/; max-age=86400`; // 1 day
             }
             return response.data;
         },
@@ -63,6 +65,7 @@ export function useLogin(): UseMutationResult<AuthResponse, Error, LoginData> {
 export function useLogout() {
     return () => {
         localStorage.removeItem('authToken');
+        document.cookie = 'auth_token=; path=/; max-age=0';
         window.location.href = '/login';
     };
 }

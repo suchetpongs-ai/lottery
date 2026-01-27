@@ -35,7 +35,7 @@ export default function CheckoutPage() {
     const handleCheckout = async () => {
         try {
             setIsProcessing(true);
-            const ticketIds = tickets.map((t) => t.id);
+            const ticketIds = tickets.map((t) => Number(t.id));
             const order = await checkoutMutation.mutateAsync({ ticketIds });
 
             // Navigate to payment page

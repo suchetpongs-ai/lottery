@@ -14,6 +14,12 @@ export class OrderController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Get('my-orders')
+    async getMyOrders(@Request() req) {
+        return this.orderService.getUserOrders(req.user.id);
+    }
+
+    @UseGuards(JwtAuthGuard)
     @Post(':id/pay')
     async confirmPayment(@Param('id') id: string) {
         return this.orderService.confirmPayment(parseInt(id));

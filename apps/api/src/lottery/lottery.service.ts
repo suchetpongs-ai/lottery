@@ -145,13 +145,19 @@ export class LotteryService {
 
     // สร้างงวดใหม่
     async createRound(createRoundDto: CreateRoundDto) {
+        const drawDate = new Date(createRoundDto.drawDate);
+        const openSellingAt = new Date(createRoundDto.openSellingAt);
+        const closeSellingAt = createRoundDto.closeSellingAt
+            ? new Date(createRoundDto.closeSellingAt)
+            : new Date(drawDate.getTime() - 24 * 60 * 60 * 1000); // 1 day before draw
+
         const round = await this.prisma.round.create({
             data: {
                 name: createRoundDto.name || `งวดวันที่ ${createRoundDto.drawDate}`,
-                drawDate: createRoundDto.drawDate,
-                openSellingAt: createRoundDto.openSellingAt,
-                closeSellingAt: createRoundDto.closeSellingAt || new Date(new Date(createRoundDto.drawDate).getTime() - 24 * 60 * 60 * 1000), // 1 day before draw
-                status: 'OPEN',
+                drawDate,
+                openSellingAt,
+                closeSellingAt,
+                status: 'Open', // Use 'Open' to match getCurrentRound filter
             },
         });
         return round;
@@ -204,19 +210,27 @@ export class LotteryService {
 
     // เพิ่มสลากเข้าระบบ (สำหรับ Admin)
     async addTickets(roundId: number, tickets: { number: string; price: number; setSize: number; imageUrl?: string }[]) {
-        const ticketsData = tickets.map(t => ({
-            roundId,
-            number: t.number,
-            price: t.price,
-            setSize: t.setSize,
-            imageUrl: t.imageUrl,
-            status: 'Available',
-        }));
+        // LibSQL adapter doesn't auto-generate BigInt IDs, so we need to generate them manually
+        // Get the current max ID
+        const maxIdResult = await this.prisma.ticket.aggregate({
+            _max: { id: true }
+        });
+        let nextId = (maxIdResult._max.id || BigInt(0)) + BigInt(1);
 
-        // ใช้ loop insert แทน createMany เพื่อป้องกันปัญหา autoincrement กับ BigInt บน LibSQL adapter
         let count = 0;
-        for (const data of ticketsData) {
-            await this.prisma.ticket.create({ data });
+        for (const t of tickets) {
+            await this.prisma.ticket.create({
+                data: {
+                    id: nextId,
+                    roundId,
+                    number: t.number,
+                    price: t.price,
+                    setSize: t.setSize,
+                    imageUrl: t.imageUrl,
+                    status: 'Available',
+                },
+            });
+            nextId++;
             count++;
         }
 

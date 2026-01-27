@@ -2,7 +2,7 @@ import { useMutation, useQuery, UseMutationResult, UseQueryResult } from '@tanst
 import apiClient from '../client';
 
 interface CheckoutData {
-    ticketIds: string[]; // เปลี่ยนเป็น string[] เพราะ ticket.id เป็น string
+    ticketIds: number[]; // Backend expects numbers
 }
 
 interface Order {
@@ -48,7 +48,7 @@ export function useCheckout(): UseMutationResult<Order, Error, CheckoutData> {
 export function useConfirmPayment(): UseMutationResult<any, Error, string> {
     return useMutation({
         mutationFn: async (orderId: string) => {
-            const response = await apiClient.post(`/order/${orderId}/confirm-payment`);
+            const response = await apiClient.post(`/order/${orderId}/pay`);
             return response.data;
         },
     });
@@ -58,7 +58,7 @@ export function useUserOrders(): UseQueryResult<Order[], Error> {
     return useQuery({
         queryKey: ['orders', 'user'],
         queryFn: async () => {
-            const response = await apiClient.get('/order/user');
+            const response = await apiClient.get('/order/my-orders');
             return response.data;
         },
     });

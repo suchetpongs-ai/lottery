@@ -16,12 +16,13 @@ export class OrderService {
 
         // ใช้ interactive transaction ของ Prisma
         const result = await this.prisma.$transaction(async (tx) => {
-            // 1. ล็อคและตรวจสอบสลากทั้งหมด (FOR UPDATE)
-            const tickets = await tx.$queryRaw<any[]>`
-        SELECT * FROM tickets 
-        WHERE id = ANY(${ticketIds}) AND status = 'Available'
-        FOR UPDATE
-      `;
+            // 1. Query tickets using Prisma ORM (SQLite compatible)
+            const tickets = await tx.ticket.findMany({
+                where: {
+                    id: { in: ticketIds.map(id => BigInt(id)) },
+                    status: 'Available',
+                },
+            });
 
             // 2. ตรวจสอบว่าสลากที่เลือกทั้งหมดยังว่างอยู่หรือไม่
             if (tickets.length !== ticketIds.length) {
@@ -34,14 +35,20 @@ export class OrderService {
 
             // 3. คำนวณยอดรวม
             const totalAmount = tickets.reduce((sum, ticket) => {
-                return sum + parseFloat(ticket.price);
+                return sum + Number(ticket.price);
             }, 0);
 
             // 4. สร้าง Order พร้อมกำหนดเวลาหมดอายุ (15 นาที)
+            // 4. สร้าง Order พร้อมกำหนดเวลาหมดอายุ (15 นาที)
             const expireAt = new Date(Date.now() + 15 * 60 * 1000);
+
+            // Manual ID generation for Order
+            const maxOrderId = await tx.order.aggregate({ _max: { id: true } });
+            const nextOrderId = (maxOrderId._max.id || BigInt(0)) + BigInt(1);
 
             const order = await tx.order.create({
                 data: {
+                    id: nextOrderId,
                     userId,
                     totalAmount,
                     status: 'Pending',
@@ -50,15 +57,21 @@ export class OrderService {
             });
 
             // 5. สร้าง Order Items
-            const orderItems = tickets.map(ticket => ({
-                orderId: order.id,
-                ticketId: BigInt(ticket.id),
-                priceAtPurchase: parseFloat(ticket.price),
-            }));
+            // Manual ID generation for OrderItem
+            const maxItemId = await tx.orderItem.aggregate({ _max: { id: true } });
+            let nextItemId = (maxItemId._max.id || BigInt(0)) + BigInt(1);
 
-            await tx.orderItem.createMany({
-                data: orderItems,
-            });
+            for (const ticket of tickets) {
+                await tx.orderItem.create({
+                    data: {
+                        id: nextItemId,
+                        orderId: order.id,
+                        ticketId: BigInt(ticket.id),
+                        priceAtPurchase: Number(ticket.price),
+                    },
+                });
+                nextItemId++;
+            }
 
             // 6. อัปเดตสถานะสลากเป็น Reserved
             await tx.ticket.updateMany({
@@ -92,16 +105,15 @@ export class OrderService {
      */
     async confirmPayment(orderId: number) {
         return this.prisma.$transaction(async (tx) => {
-            // 1. Lock Order
-            const orderRes = await tx.$queryRaw<any[]>`
-        SELECT * FROM orders WHERE id = ${orderId} FOR UPDATE
-      `;
+            // 1. Find Order using Prisma ORM (SQLite compatible)
+            const order = await tx.order.findUnique({
+                where: { id: BigInt(orderId) },
+                include: { items: true },
+            });
 
-            if (orderRes.length === 0) {
+            if (!order) {
                 throw new NotFoundException('Order not found');
             }
-
-            const order = orderRes[0];
 
             // 2. Idempotency Check
             if (order.status === 'Paid') {
@@ -115,26 +127,33 @@ export class OrderService {
 
             // 4. อัปเดต Order
             await tx.order.update({
-                where: { id: orderId },
+                where: { id: BigInt(orderId) },
                 data: {
                     status: 'Paid',
                 },
             });
 
-            // 5. อัปเดต Tickets จาก Reserved -> Sold
-            await tx.$executeRaw`
-        UPDATE tickets 
-        SET status = 'Sold' 
-        FROM order_items 
-        WHERE tickets.id = order_items.ticket_id 
-        AND order_items.order_id = ${orderId}
-      `;
+            // 5. อัปเดต Tickets จาก Reserved -> Sold (SQLite compatible)
+            const ticketIds = order.items.map(item => item.ticketId);
+            await tx.ticket.updateMany({
+                where: {
+                    id: { in: ticketIds },
+                },
+                data: {
+                    status: 'Sold',
+                },
+            });
 
             // 6. บันทึก Payment
+            // Manual ID generation for Payment
+            const maxPaymentId = await tx.payment.aggregate({ _max: { id: true } });
+            const nextPaymentId = (maxPaymentId._max.id || BigInt(0)) + BigInt(1);
+
             await tx.payment.create({
                 data: {
+                    id: nextPaymentId,
                     orderId: BigInt(orderId),
-                    amount: order.total_amount,
+                    amount: order.totalAmount,
                     method: 'Mock',
                     status: 'Success',
                     paidAt: new Date(),
@@ -245,15 +264,26 @@ export class OrderService {
                 },
             });
 
-            // 3. ปลดล็อคสลากกลับเป็น Available
-            await tx.$executeRaw`
-        UPDATE tickets 
-        SET status = 'Available' 
-        FROM order_items 
-        WHERE tickets.id = order_items.ticket_id 
-        AND order_items.order_id = ANY(${expiredOrderIds})
-        AND tickets.status = 'Reserved'
-      `;
+            // 3. ปลดล็อคสลากกลับเป็น Available (SQLite compatible)
+            // Get all ticket IDs from expired orders
+            const orderItems = await tx.orderItem.findMany({
+                where: {
+                    orderId: { in: expiredOrderIds },
+                },
+            });
+            const ticketIds = orderItems.map(item => item.ticketId);
+
+            if (ticketIds.length > 0) {
+                await tx.ticket.updateMany({
+                    where: {
+                        id: { in: ticketIds },
+                        status: 'Reserved',
+                    },
+                    data: {
+                        status: 'Available',
+                    },
+                });
+            }
 
             return { cancelledCount: expiredOrders.length };
         });

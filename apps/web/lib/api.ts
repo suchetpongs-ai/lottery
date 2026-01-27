@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API base URL - adjust based on environment
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 // Create axios instance with default config
 export const api = axios.create({
@@ -14,7 +14,7 @@ export const api = axios.create({
 // Add request interceptor to include auth token
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -31,7 +31,7 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             // Unauthorized - clear token and redirect to login
-            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
             if (typeof window !== 'undefined') {
                 window.location.href = '/login';
             }
