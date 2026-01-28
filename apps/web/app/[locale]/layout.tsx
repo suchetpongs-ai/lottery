@@ -40,7 +40,8 @@ export async function generateMetadata({
     params: Promise<{ locale: string }>
 }): Promise<Metadata> {
     const { locale } = await params;
-    const seo = seoData[locale] || seoData.lo;
+    const defaultSeo = seoData['lo'];
+    const seo = seoData[locale] ?? defaultSeo;
     const baseUrl = 'https://hauythai.com';
 
     return {
