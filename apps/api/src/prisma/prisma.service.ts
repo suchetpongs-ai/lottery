@@ -21,7 +21,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       console.log('🔌 Using PostgreSQL adapter');
     } else {
       // Use LibSQL adapter for local SQLite
-      adapter = new PrismaLibSQL({ url: databaseUrl });
+      adapter = new PrismaLibSql({ url: databaseUrl });
       console.log('🔌 Using LibSQL adapter');
     }
 
