@@ -24,7 +24,9 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://76.13.18.170',
-      'http://76.13.18.170:3000'
+      'http://76.13.18.170:3000',
+      'https://hauythai.com',
+      'https://www.hauythai.com'
     ],
     credentials: true,
   });
