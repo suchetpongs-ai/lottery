@@ -1,33 +1,23 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaLibSql } from '@prisma/adapter-libsql';
-import * as path from 'path';
-import * as dotenv from 'dotenv';
-
-dotenv.config({ path: 'C:/Antigravity/Lottery/apps/api/.env' });
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    // For local SQLite, use absolute file path
-    // Note: __dirname in compiled output is dist/prisma, so we use absolute path
-    const dbPath = 'C:/Antigravity/Lottery/apps/api/prisma/dev.db';
-    const connectionString = `file:${dbPath}`;
-
-    const adapter = new PrismaLibSql({
-      url: connectionString,
-    } as any);
-
+    // Use DATABASE_URL from environment variable
+    // This works for both PostgreSQL (on VPS) and SQLite (local dev)
     super({
-      adapter,
-      log: ['query', 'info', 'warn', 'error'],
+      log: process.env.NODE_ENV === 'development'
+        ? ['query', 'info', 'warn', 'error']
+        : ['warn', 'error'],
+      datasourceUrl: process.env.DATABASE_URL,
     });
   }
 
   async onModuleInit() {
     console.log('🔌 PrismaService: Connecting to database...');
     const url = process.env.DATABASE_URL;
-    console.log(`🔌 Database URL found: ${url ? 'YES' : 'NO'} (${url ? url.substring(0, 15) + '...' : 'N/A'})`);
+    console.log(`🔌 Database URL found: ${url ? 'YES' : 'NO'} (${url ? url.substring(0, 20) + '...' : 'N/A'})`);
 
     try {
       await this.$connect();
@@ -42,5 +32,3 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     await this.$disconnect();
   }
 }
-
-
