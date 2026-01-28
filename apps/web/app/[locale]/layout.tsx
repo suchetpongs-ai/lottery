@@ -5,7 +5,8 @@ import { Providers } from "../providers";
 import { Navbar } from "@/components/cart/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+import { locales } from '@/lib/i18n';
 
 const inter = Inter({
     subsets: ["latin"],
@@ -17,12 +18,66 @@ const outfit = Outfit({
     variable: '--font-outfit',
 });
 
-export const metadata: Metadata = {
-    title: "สลากดิจิทัล - ระบบสลากกินแบ่งรัฐบาลออนไลน์",
-    description: "ซื้อสลากกินแบ่งรัฐบาลออนไลน์ ปลอดภัย รวดเร็ว ตรวจรางวัลอัตโนมัติ",
+// SEO Metadata per locale
+const seoData: Record<string, { title: string; description: string }> = {
+    lo: {
+        title: "ສະຫຼາກດິຈິທອລ - ຊື້ສະຫຼາກອອນລາຍ ປອດໄພ ໄວ",
+        description: "ແພລັດຟອມຊື້ສະຫຼາກກິນແບ່ງລັດຖະບານອອນລາຍ ປອດໄພ ໄວ ກວດລາງວັນອັດຕະໂນມັດ ຮັບເງິນໄວ",
+    },
+    th: {
+        title: "สลากดิจิทัล - ซื้อสลากออนไลน์ ปลอดภัย รวดเร็ว",
+        description: "แพลตฟอร์มซื้อสลากกินแบ่งรัฐบาลออนไลน์ ปลอดภัย รวดเร็ว ตรวจรางวัลอัตโนมัติ รับเงินไว",
+    },
+    en: {
+        title: "Digital Lottery - Buy Lottery Online, Safe & Fast",
+        description: "Online government lottery platform. Safe, fast, automatic prize checking, instant payouts.",
+    },
 };
 
-import { setRequestLocale } from 'next-intl/server';
+export async function generateMetadata({
+    params
+}: {
+    params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+    const { locale } = await params;
+    const seo = seoData[locale] || seoData.lo;
+    const baseUrl = 'https://hauythai.com';
+
+    return {
+        title: seo.title,
+        description: seo.description,
+        metadataBase: new URL(baseUrl),
+        alternates: {
+            canonical: locale === 'lo' ? baseUrl : `${baseUrl}/${locale}`,
+            languages: {
+                'lo': baseUrl,
+                'th': `${baseUrl}/th`,
+                'en': `${baseUrl}/en`,
+            },
+        },
+        openGraph: {
+            title: seo.title,
+            description: seo.description,
+            url: locale === 'lo' ? baseUrl : `${baseUrl}/${locale}`,
+            siteName: 'ສະຫຼາກດິຈິທອລ',
+            locale: locale === 'lo' ? 'lo_LA' : locale === 'th' ? 'th_TH' : 'en_US',
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: seo.title,
+            description: seo.description,
+        },
+        robots: {
+            index: true,
+            follow: true,
+        },
+    };
+}
+
+export function generateStaticParams() {
+    return locales.map((locale) => ({ locale }));
+}
 
 export default async function LocaleLayout({
     children,
@@ -41,6 +96,26 @@ export default async function LocaleLayout({
 
     return (
         <html lang={locale} className="dark">
+            <head>
+                {/* JSON-LD Structured Data */}
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify({
+                            "@context": "https://schema.org",
+                            "@type": "WebSite",
+                            "name": "ສະຫຼາກດິຈິທອລ",
+                            "alternateName": ["สลากดิจิทัล", "Digital Lottery"],
+                            "url": "https://hauythai.com",
+                            "potentialAction": {
+                                "@type": "SearchAction",
+                                "target": "https://hauythai.com/browse?q={search_term_string}",
+                                "query-input": "required name=search_term_string"
+                            }
+                        })
+                    }}
+                />
+            </head>
             <body className={`${inter.variable} ${outfit.variable}`}>
                 <NextIntlClientProvider messages={messages}>
                     <Providers>

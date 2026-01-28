@@ -1,9 +1,9 @@
 import { getRequestConfig } from 'next-intl/server';
 
-export const locales = ['th', 'lo', 'en'] as const;
+export const locales = ['lo', 'th', 'en'] as const;
 export type Locale = (typeof locales)[number];
 
-export const defaultLocale: Locale = 'th';
+export const defaultLocale: Locale = 'lo';
 
 export const localeNames: Record<Locale, string> = {
     th: 'ไทย',
