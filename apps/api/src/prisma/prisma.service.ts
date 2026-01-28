@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaLibSQL } from '@prisma/adapter-libsql';
+import { PrismaLibSql } from '@prisma/adapter-libsql';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
@@ -12,7 +12,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     const databaseUrl = process.env.DATABASE_URL || '';
     const isPostgres = databaseUrl.startsWith('postgres');
 
-    let adapter: PrismaLibSQL | PrismaPg;
+    let adapter: PrismaLibSql | PrismaPg;
 
     if (isPostgres) {
       // Use PostgreSQL adapter for VPS
