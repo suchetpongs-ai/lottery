@@ -18,20 +18,18 @@ const outfit = Outfit({
     variable: '--font-outfit',
 });
 
-// SEO Metadata per locale
-const seoData: Record<string, { title: string; description: string }> = {
-    lo: {
-        title: "ສະຫຼາກດິຈິທອລ - ຊື້ສະຫຼາກອອນລາຍ ປອດໄພ ໄວ",
-        description: "ແພລັດຟອມຊື້ສະຫຼາກກິນແບ່ງລັດຖະບານອອນລາຍ ປອດໄພ ໄວ ກວດລາງວັນອັດຕະໂນມັດ ຮັບເງິນໄວ",
-    },
-    th: {
-        title: "สลากดิจิทัล - ซื้อสลากออนไลน์ ปลอดภัย รวดเร็ว",
-        description: "แพลตฟอร์มซื้อสลากกินแบ่งรัฐบาลออนไลน์ ปลอดภัย รวดเร็ว ตรวจรางวัลอัตโนมัติ รับเงินไว",
-    },
-    en: {
-        title: "Digital Lottery - Buy Lottery Online, Safe & Fast",
-        description: "Online government lottery platform. Safe, fast, automatic prize checking, instant payouts.",
-    },
+// SEO Metadata per locale - using const to ensure type safety
+const seoLo = {
+    title: "ສະຫຼາກດິຈິທອລ - ຊື້ສະຫຼາກອອນລາຍ ປອດໄພ ໄວ",
+    description: "ແພລັດຟອມຊື້ສະຫຼາກກິນແບ່ງລັດຖະບານອອນລາຍ ປອດໄພ ໄວ ກວດລາງວັນອັດຕະໂນມັດ ຮັບເງິນໄວ",
+};
+const seoTh = {
+    title: "สลากดิจิทัล - ซื้อสลากออนไลน์ ปลอดภัย รวดเร็ว",
+    description: "แพลตฟอร์มซื้อสลากกินแบ่งรัฐบาลออนไลน์ ปลอดภัย รวดเร็ว ตรวจรางวัลอัตโนมัติ รับเงินไว",
+};
+const seoEn = {
+    title: "Digital Lottery - Buy Lottery Online, Safe & Fast",
+    description: "Online government lottery platform. Safe, fast, automatic prize checking, instant payouts.",
 };
 
 export async function generateMetadata({
@@ -42,15 +40,8 @@ export async function generateMetadata({
     const { locale } = await params;
     const baseUrl = 'https://hauythai.com';
 
-    // Explicitly handle all cases to ensure seo is never undefined
-    let seo: { title: string; description: string };
-    if (locale === 'th') {
-        seo = seoData['th'];
-    } else if (locale === 'en') {
-        seo = seoData['en'];
-    } else {
-        seo = seoData['lo'];
-    }
+    // Get SEO data based on locale with guaranteed non-undefined value
+    const seo = locale === 'th' ? seoTh : locale === 'en' ? seoEn : seoLo;
 
     return {
         title: seo.title,
