@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { TicketCard } from '@/components/lottery/TicketCard';
@@ -9,7 +9,7 @@ import { useSearchTickets, useCurrentRound } from '@/lib/api/hooks/useLottery';
 import { useTranslations } from 'next-intl';
 import { LotterySearchPanel } from '@/components/lottery/LotterySearchPanel';
 
-export default function BrowsePage() {
+function BrowseContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const initialNumber = searchParams.get('number') || '';
@@ -222,5 +222,25 @@ export default function BrowsePage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function BrowseLoading() {
+    return (
+        <div className="min-h-screen py-20 px-4">
+            <div className="max-w-7xl mx-auto">
+                <div className="flex items-center justify-center py-20">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400"></div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function BrowsePage() {
+    return (
+        <Suspense fallback={<BrowseLoading />}>
+            <BrowseContent />
+        </Suspense>
     );
 }
