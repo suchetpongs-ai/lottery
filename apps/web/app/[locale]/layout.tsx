@@ -40,9 +40,17 @@ export async function generateMetadata({
     params: Promise<{ locale: string }>
 }): Promise<Metadata> {
     const { locale } = await params;
-    const defaultSeo = seoData['lo'];
-    const seo = seoData[locale] ?? defaultSeo;
     const baseUrl = 'https://hauythai.com';
+
+    // Explicitly handle all cases to ensure seo is never undefined
+    let seo: { title: string; description: string };
+    if (locale === 'th') {
+        seo = seoData['th'];
+    } else if (locale === 'en') {
+        seo = seoData['en'];
+    } else {
+        seo = seoData['lo'];
+    }
 
     return {
         title: seo.title,
