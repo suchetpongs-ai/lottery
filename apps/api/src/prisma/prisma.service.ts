@@ -4,13 +4,11 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    // Use DATABASE_URL from environment variable
-    // This works for both PostgreSQL (on VPS) and SQLite (local dev)
+    // Prisma will automatically use DATABASE_URL from environment
     super({
       log: process.env.NODE_ENV === 'development'
         ? ['query', 'info', 'warn', 'error']
         : ['warn', 'error'],
-      datasourceUrl: process.env.DATABASE_URL,
     });
   }
 
