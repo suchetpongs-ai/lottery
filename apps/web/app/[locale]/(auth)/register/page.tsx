@@ -127,7 +127,9 @@ export default function RegisterPage() {
                         {registerMutation.isError && (
                             <div className="p-3 rounded-lg bg-error/10 border border-error/20">
                                 <p className="text-sm text-error">
-                                    {registerMutation.error?.message || 'ชื่อผู้ใช้หรือเบอร์โทรศัพท์นี้ถูกใช้งานแล้ว'}
+                                    {(registerMutation.error as any)?.response?.status === 409
+                                        ? 'เบอร์โทรศัพท์หรือชื่อผู้ใช้นี้ถูกใช้งานแล้ว'
+                                        : (registerMutation.error as any)?.response?.data?.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก'}
                                 </p>
                             </div>
                         )}
