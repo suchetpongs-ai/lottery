@@ -2,14 +2,12 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
-  engineType      = "client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  // URL is configured in prisma.config.ts
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ========================================
@@ -190,4 +188,16 @@ model Notification {
 
   @@index([userId, isRead])
   @@map("notifications")
+}
+
+// ========================================
+// การตั้งค่าระบบ (System Config)
+// ========================================
+model SystemConfig {
+  key         String   @id
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_configs")
 }
