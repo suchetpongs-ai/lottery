@@ -1,4 +1,5 @@
 import { useMutation, UseMutationResult, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../../stores/auth';
 import apiClient from '../client';
 
 interface RegisterData {
@@ -19,6 +20,7 @@ interface AuthResponse {
         username: string;
         phoneNumber: string;
         kycStatus: string;
+        role: string;
     };
 }
 
@@ -35,8 +37,12 @@ export function useRegister(): UseMutationResult<AuthResponse, Error, RegisterDa
             return response.data;
         },
         onSuccess: (data) => {
+            // Update React Query Cache
             queryClient.setQueryData(['user'], data.user);
             queryClient.invalidateQueries({ queryKey: ['user'] });
+
+            // Sync with Zustand Store
+            useAuthStore.getState().login(data.accessToken, data.user);
         },
     });
 }
@@ -56,8 +62,12 @@ export function useLogin(): UseMutationResult<AuthResponse, Error, LoginData> {
             return response.data;
         },
         onSuccess: (data) => {
+            // Update React Query Cache
             queryClient.setQueryData(['user'], data.user);
             queryClient.invalidateQueries({ queryKey: ['user'] });
+
+            // Sync with Zustand Store
+            useAuthStore.getState().login(data.accessToken, data.user);
         },
     });
 }
@@ -66,6 +76,7 @@ export function useLogout() {
     return () => {
         localStorage.removeItem('authToken');
         document.cookie = 'auth_token=; path=/; max-age=0';
+        useAuthStore.getState().logout();
         window.location.href = '/login';
     };
 }
