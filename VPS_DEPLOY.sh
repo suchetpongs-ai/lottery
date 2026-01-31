@@ -111,7 +111,7 @@ npm run build
 # 14. Start services with PM2
 echo "🚀 Starting services..."
 cd /var/www/lottery/apps/api
-pm2 start dist/src/main.js --name lottery-api
+pm2 start dist/main.js --name lottery-api
 cd /var/www/lottery/apps/web
 pm2 start npm --name lottery-web -- start
 pm2 save
