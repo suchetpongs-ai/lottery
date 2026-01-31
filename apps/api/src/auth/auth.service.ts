@@ -9,7 +9,7 @@ export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
-    ) { }
+    ) { } // (Force Git Update)
 
     async register(registerDto: RegisterDto) {
         const { username, phoneNumber, password } = registerDto;

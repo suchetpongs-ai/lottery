@@ -5,7 +5,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private prisma: PrismaService) { } // (Force Git Update)
 
     /**
      * Checkout - ฟังก์ชันหลักที่ใช้ Pessimistic Locking

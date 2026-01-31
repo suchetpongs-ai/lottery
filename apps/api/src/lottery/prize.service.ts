@@ -8,7 +8,7 @@ import axios from 'axios';
 
 @Injectable()
 export class PrizeService {
-    private readonly logger = new Logger(PrizeService.name);
+    private readonly logger = new Logger(PrizeService.name); // (Force Git Update)
 
     constructor(
         private prisma: PrismaService,

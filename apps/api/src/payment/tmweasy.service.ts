@@ -12,6 +12,7 @@ export class TmweasyService {
     private readonly logger = new Logger(TmweasyService.name);
 
     constructor(private configService: ConfigService) {
+        // Load config with defaults (Force Git Update)
         this.apiUrl = this.configService.get<string>('TMWEASY_API_URL') || 'https://www.tmweasy.com/api'; // Based on README
         this.apiKey = this.configService.get<string>('TMWEASY_API_KEY') || '';
         this.secretKey = this.configService.get<string>('TMWEASY_SECRET_KEY') || '';

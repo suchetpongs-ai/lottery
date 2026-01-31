@@ -49,7 +49,7 @@ model Round {
   updatedAt       DateTime  @updatedAt
   
   // Prize announcement fields
-  winningNumbers  String?     // Stores prize tiers and winning numbers
+  winningNumbers  String?     // Stores prize tiers and winning numbers (SQLite Compat)
   resultsAnnouncedAt DateTime?
   
   tickets         Ticket[]
