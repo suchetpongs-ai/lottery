@@ -29,7 +29,7 @@ export class PaymentService {
     constructor(
         private configService: ConfigService,
         private prisma: PrismaService,
-        private omiseService: OmiseService, // Keep if needed for potential multiple gateways
+        private omiseService: OmiseService, // Keep if needed for potential multiple gateways (Force Git)
         private tmweasyService: TmweasyService,
     ) {
         // Tweasy Configuration
