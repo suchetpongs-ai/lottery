@@ -34,22 +34,41 @@ export class PaymentController {
     @UseGuards(JwtAuthGuard)
     @Post('promptpay/generate-qr')
     async generatePromptPayQR(@Body() dto: GenerateQRDto) {
-        // This endpoint is deprecated, redirecting to Tweasy
-        console.log('PromptPay endpoint called, using Tweasy instead');
-        return this.createTweasyPayment({ orderId: dto.orderId, amount: dto.amount });
+        return this.paymentService.createOmisePromptPay({
+            orderId: dto.orderId,
+            amount: dto.amount,
+        });
     }
 
     @UseGuards(JwtAuthGuard)
+    @Post('tmweasy/create') // PromptPay
+    async createTmweasyPayment(@Body() dto: { orderId: number; amount: number }) {
+        return this.paymentService.createTmweasyPromptPay(dto);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('tmweasy/verify-slip')
+    async verifySlip(@Body() dto: { orderId: number; qrPayload: string }) {
+        return this.paymentService.verifySlipQr(dto.qrPayload, dto.orderId);
+    }
+
+    @Post('tmweasy/webhook')
+    async handleTmweasyWebhook(@Body() payload: any) {
+        // Reuse webhook logic or implement specific TMWeasy one if different
+        // this.paymentService.handleTweasyWebhook(payload); 
+        return { received: true };
+    }
+
+    // Keeping Omise endpoints for reference or fallback if needed, but primary is now TMWeasy
+    @UseGuards(JwtAuthGuard)
     @Post('credit-card/charge')
     async createCreditCardCharge(@Body() dto: CreateChargeDto) {
-        // This endpoint is deprecated, redirecting to Tweasy
-        console.log('Credit card endpoint called, using Tweasy instead');
-        return this.createTweasyPayment({ orderId: dto.orderId, amount: dto.amount });
+        return this.paymentService.createOmiseCharge(dto);
     }
 
     @Post('webhook/omise')
     async handleOmiseWebhook(@Body() payload: any) {
-        console.log('Omise webhook (deprecated)');
+        await this.paymentService.handleOmiseWebhook(payload);
         return { received: true };
     }
 

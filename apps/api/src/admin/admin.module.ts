@@ -5,10 +5,13 @@ import { OrderModule } from '../order/order.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { UserManagementService } from './user-management.service';
 
+import { SettingsController } from './settings/settings.controller';
+import { SettingsService } from './settings/settings.service';
+
 @Module({
     imports: [LotteryModule, PrismaModule, OrderModule],
-    controllers: [AdminController],
-    providers: [UserManagementService],
+    controllers: [AdminController, SettingsController],
+    providers: [UserManagementService, SettingsService],
     exports: [UserManagementService],
 })
 export class AdminModule { }

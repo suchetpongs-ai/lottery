@@ -28,17 +28,22 @@ export class AdminController {
 
     @Get('stats')
     async getStats() {
-        const [tickets, orders] = await Promise.all([
+        const [tickets, orders, users] = await Promise.all([
             this.lotteryService.getTicketStats(),
             this.orderService.getOrderStats(),
+            this.userManagementService.getUserStats(),
         ]);
 
         return {
             totalSales: orders.totalSales,
+            salesToday: orders.salesToday,
+            salesYesterday: orders.salesYesterday,
             ticketsSold: tickets.sold,
             ticketsAvailable: tickets.available,
             activeRounds: tickets.activeRounds,
             pendingOrders: orders.pending,
+            totalUsers: users.total,
+            newUsersToday: users.newToday,
         };
     }
 
@@ -98,9 +103,39 @@ export class AdminController {
         return this.userManagementService.banUser(parseInt(id), dto.reason);
     }
 
+    @Put('users/:id/role')
+    async updateUserRole(@Param('id') id: string, @Body() body: { role: string }) {
+        return this.userManagementService.updateUserRole(parseInt(id), body.role);
+    }
+
     @Put('users/:id/unban')
     async unbanUser(@Param('id') id: string) {
         return this.userManagementService.unbanUser(parseInt(id));
+    }
+
+    // Ticket Management
+    @Get('tickets')
+    async getTickets(
+        @Query('roundId') roundId: string,
+        @Query('page') page: string = '1',
+        @Query('search') search: string,
+    ) {
+        return this.lotteryService.getTicketsByRound(
+            parseInt(roundId || '0'),
+            parseInt(page),
+            50,
+            search
+        );
+    }
+
+    @Put('tickets/:id')
+    async updateTicket(@Param('id') id: string, @Body() body: any) {
+        return this.lotteryService.updateTicket(parseInt(id), body);
+    }
+
+    @Delete('tickets/:id')
+    async deleteTicket(@Param('id') id: string) {
+        return this.lotteryService.deleteTicket(parseInt(id));
     }
 
     // Claim Management Endpoints

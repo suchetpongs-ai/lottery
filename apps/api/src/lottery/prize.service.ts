@@ -89,7 +89,7 @@ export class PrizeService {
         const updatedRound = await this.prisma.round.update({
             where: { id: dto.roundId },
             data: {
-                winningNumbers: dto.winningNumbers,
+                winningNumbers: JSON.stringify(dto.winningNumbers),
                 resultsAnnouncedAt: new Date(),
                 status: 'DRAWN',
             },
@@ -99,7 +99,7 @@ export class PrizeService {
         this.logger.log(`Triggering prize check for ${round.tickets.length} sold tickets`);
 
         // Synchronously check all tickets (since queue is disabled)
-        await this.checkAllTicketsForRound(dto.roundId, round.winningNumbers);
+        await this.checkAllTicketsForRound(dto.roundId, dto.winningNumbers);
 
         // TODO: Send notifications to users
 
@@ -225,7 +225,21 @@ export class PrizeService {
         }
 
         // Check prize
-        const prizeResult = this.calculatePrize(ticketNumber, round.winningNumbers as any);
+        let winningNumbersObj = round.winningNumbers;
+        if (typeof winningNumbersObj === 'string') {
+            try {
+                winningNumbersObj = JSON.parse(winningNumbersObj);
+            } catch (e) {
+                this.logger.error('Failed to parse winning numbers JSON', e);
+                return {
+                    ticketNumber,
+                    roundName: round.name || '',
+                    isWinner: false,
+                    message: 'ข้อมูลรางวัลไม่ถูกต้อง',
+                };
+            }
+        }
+        const prizeResult = this.calculatePrize(ticketNumber, winningNumbersObj);
 
         // Update ticket if winner AND ticket exists
         if (ticket && prizeResult.isWinner) {

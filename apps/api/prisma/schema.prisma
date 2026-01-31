@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -49,7 +49,7 @@ model Round {
   updatedAt       DateTime  @updatedAt
   
   // Prize announcement fields
-  winningNumbers  Json?     // Stores prize tiers and winning numbers
+  winningNumbers  String?     // Stores prize tiers and winning numbers
   resultsAnnouncedAt DateTime?
   
   tickets         Ticket[]

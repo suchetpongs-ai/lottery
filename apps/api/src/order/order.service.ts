@@ -217,17 +217,32 @@ export class OrderService {
      * Get order statistics (สำหรับ Admin Dashboard)
      */
     async getOrderStats() {
-        const [totalSales, pending] = await Promise.all([
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const [totalSales, pending, salesToday, salesYesterday] = await Promise.all([
             this.prisma.order.aggregate({
                 where: { status: 'Paid' },
                 _sum: { totalAmount: true },
             }),
             this.prisma.order.count({ where: { status: 'Pending' } }),
+            this.prisma.order.aggregate({
+                where: { status: 'Paid', createdAt: { gte: today } },
+                _sum: { totalAmount: true },
+            }),
+            this.prisma.order.aggregate({
+                where: { status: 'Paid', createdAt: { gte: yesterday, lt: today } },
+                _sum: { totalAmount: true },
+            }),
         ]);
 
         return {
             totalSales: totalSales._sum.totalAmount || 0,
             pending,
+            salesToday: salesToday._sum?.totalAmount || 0,
+            salesYesterday: salesYesterday._sum?.totalAmount || 0,
         };
     }
 

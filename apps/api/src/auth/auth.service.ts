@@ -60,9 +60,14 @@ export class AuthService {
     async login(loginDto: LoginDto) {
         const { phoneNumber, password } = loginDto;
 
-        // ค้นหาผู้ใช้
-        const user = await this.prisma.user.findUnique({
-            where: { phoneNumber },
+        // ค้นหาผู้ใช้ (รองรับทั้งเบอร์โทรและชื่อผู้ใช้)
+        const user = await this.prisma.user.findFirst({
+            where: {
+                OR: [
+                    { phoneNumber: phoneNumber },
+                    { username: { equals: phoneNumber } }, // Case-insensitive login removed for SQLite
+                ],
+            },
         });
 
         if (!user) {

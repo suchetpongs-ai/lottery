@@ -236,4 +236,51 @@ export class LotteryService {
 
         return { message: `Added ${count} tickets successfully` };
     }
+
+    // Admin: Get tickets by round with pagination
+    async getTicketsByRound(roundId: number, page: number = 1, limit: number = 50, search?: string) {
+        const skip = (page - 1) * limit;
+        const where: any = { roundId };
+
+        if (search) {
+            where.number = { contains: search };
+        }
+
+        const [tickets, total] = await Promise.all([
+            this.prisma.ticket.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { number: 'asc' },
+            }),
+            this.prisma.ticket.count({ where }),
+        ]);
+
+        return {
+            data: tickets,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
+
+    // Admin: Update ticket
+    async updateTicket(id: number, data: any) {
+        return this.prisma.ticket.update({
+            where: { id: BigInt(id) },
+            data,
+        });
+    }
+
+    // Admin: Delete ticket
+    async deleteTicket(id: number) {
+        // Check if ticket is sold orders
+        // (Optional: Prevent deletion if already bought)
+        return this.prisma.ticket.delete({
+            where: { id: BigInt(id) },
+        });
+    }
 }

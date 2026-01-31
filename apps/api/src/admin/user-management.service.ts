@@ -99,4 +99,30 @@ export class UserManagementService {
             },
         });
     }
+    async updateUserRole(userId: number, role: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException(`User ${userId} not found`);
+        }
+
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { role },
+        });
+    }
+
+    async getUserStats() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const [total, newToday] = await Promise.all([
+            this.prisma.user.count(),
+            this.prisma.user.count({ where: { createdAt: { gte: today } } }),
+        ]);
+
+        return { total, newToday };
+    }
 }
