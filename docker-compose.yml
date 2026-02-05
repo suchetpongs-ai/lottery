@@ -30,3 +30,19 @@ services:
       - NEXT_PUBLIC_API_URL=http://api:3001/api # Internal docker network
     depends_on:
       - api
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: lottery-db
+    restart: always
+    environment:
+      POSTGRES_USER: lottery
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: lottery_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

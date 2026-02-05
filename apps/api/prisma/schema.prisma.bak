@@ -1,0 +1,203 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// โมเดลสมาชิก (Users)
+// ========================================
+model User {
+  id          Int      @id @default(autoincrement())
+  username    String   @unique
+  phoneNumber String   @unique @map("phone_number")
+  passwordHash String   @map("password_hash")
+  role        String   @default("USER") @map("role") // USER, ADMIN, SUPER_ADMIN
+  kycStatus   String   @default("Unverified") @map("kyc_status") // "Verified" or "Unverified"
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // User management fields
+  isBanned    Boolean  @default(false)
+  bannedAt    DateTime?
+  bannedReason String?
+
+  orders        Order[]
+  wishlists     Wishlist[]
+  notifications Notification[]
+  claims        Claim[]
+
+  @@map("users")
+}
+
+// ========================================
+// งวดสลาก (Rounds)
+// ========================================
+model Round {
+  id              Int       @id @default(autoincrement())
+  name            String
+  drawDate        DateTime
+  openSellingAt   DateTime
+  closeSellingAt  DateTime
+  status          String    @default("OPEN") // OPEN, CLOSED, DRAWN
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Prize announcement fields
+  winningNumbers  String?     // Stores prize tiers and winning numbers (SQLite Compat)
+  resultsAnnouncedAt DateTime?
+  
+  tickets         Ticket[]
+  orders          Order[]
+}
+
+// ========================================
+// สลาก (Tickets)
+// ========================================
+model Ticket {
+  id        BigInt   @id @default(autoincrement())
+  roundId   Int      @map("round_id")
+  number    String   // เลข 6 หลัก
+  price     Decimal
+  setSize   Int      @default(1) @map("set_size") // 1, 2, 5 (จำนวนใบในชุด)
+  status    String   @default("Available") // "Available", "Reserved", "Sold"
+  imageUrl  String?  @map("image_url") // รูปสลากจริง
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  // Prize tracking fields
+  prizeAmount    Decimal   @default(0) @map("prize_amount")
+  prizeTier      String?   @map("prize_tier") // firstPrize, nearby, threeDigit, twoDigit
+  prizeCheckedAt DateTime? @map("prize_checked_at")
+
+  round      Round       @relation(fields: [roundId], references: [id])
+  orderItems OrderItem[]
+  claims     Claim[]
+
+  @@index([number]) // Index สำหรับการค้นหาเร็ว
+  @@index([roundId, status])
+  @@map("tickets")
+}
+
+// ========================================
+// ใบสั่งซื้อ (Orders)
+// ========================================
+model Order {
+  id          BigInt    @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  roundId     Int?      @map("round_id")
+  totalAmount Decimal   @map("total_amount")
+  status      String    @default("Pending") // "Pending", "Paid", "Cancelled", "Expired"
+  createdAt   DateTime  @default(now()) @map("created_at")
+  expireAt    DateTime? @map("expire_at") // เวลาหมดอายุการจอง (15 นาที)
+
+  user     User        @relation(fields: [userId], references: [id])
+  round    Round?      @relation(fields: [roundId], references: [id])
+  items    OrderItem[]
+  payments Payment[]
+
+  @@map("orders")
+}
+
+// ========================================
+// รายการสินค้าในออเดอร์ (Order Items)
+// ========================================
+model OrderItem {
+  id              BigInt  @id @default(autoincrement())
+  orderId         BigInt  @map("order_id")
+  ticketId        BigInt  @map("ticket_id")
+  priceAtPurchase Decimal @map("price_at_purchase")
+
+  order  Order  @relation(fields: [orderId], references: [id])
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+
+  @@map("order_items")
+}
+
+// ========================================
+// การชำระเงิน (Payments)
+// ========================================
+model Payment {
+  id           BigInt    @id @default(autoincrement())
+  orderId      BigInt    @map("order_id")
+  amount       Decimal
+  method       String    // "PromptPay", "CreditCard"
+  gatewayRefId String?   @map("gateway_ref_id") // Ref จากธนาคาร
+  status       String    @default("Pending") // "Success", "Failed"
+  paidAt       DateTime? @map("paid_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+// ========================================
+// การเรียกเงินรางวัล (Claims)
+// ========================================
+model Claim {
+  id              BigInt    @id @default(autoincrement())
+  ticketId        BigInt    @map("ticket_id")
+  userId          Int       @map("user_id")
+  amount          Decimal
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  claimedAt       DateTime  @default(now()) @map("claimed_at")
+  processedAt     DateTime? @map("processed_at")
+  processedBy     Int?      @map("processed_by")
+  rejectionReason String?   @map("rejection_reason")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("claims")
+}
+
+// ========================================
+// เลขโปรด (Wishlist)
+// ========================================
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  numbers   String   // JSON array of favorite numbers
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+  @@map("wishlists")
+}
+
+// ========================================
+// การแจ้งเตือน (Notifications)
+// ========================================
+model Notification {
+  id        BigInt   @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  type      String   // NEW_ROUND, PRIZE_WIN, CLAIM_APPROVED, CLAIM_REJECTED
+  title     String
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  data      String?  // JSON additional data
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ========================================
+// การตั้งค่าระบบ (System Config)
+// ========================================
+model SystemConfig {
+  key         String   @id
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_configs")
+}

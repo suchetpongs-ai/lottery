@@ -6,8 +6,70 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ========================================
+// Enums
+// ========================================
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum KycStatus {
+  Unverified
+  Pending
+  Verified
+  Rejected
+}
+
+enum RoundStatus {
+  UPCOMING    // ยังไม่เปิดขาย
+  OPEN        // เปิดขายแล้ว
+  CLOSED      // ปิดรับซื้อแล้ว (รอประกาศผล)
+  DRAWN       // ประกาศผลแล้ว
+  ARCHIVED    // เก็บถาวร
+}
+
+enum TicketStatus {
+  Available   // พร้อมขาย
+  Reserved    // ถูกจองไว้
+  Sold        // ขายแล้ว
+  Cancelled   // ยกเลิก
+}
+
+enum OrderStatus {
+  Pending     // รอชำระเงิน
+  Paid        // ชำระเงินแล้ว
+  Cancelled   // ยกเลิก
+  Expired     // หมดอายุ
+  Refunded    // คืนเงิน
+}
+
+enum PaymentMethod {
+  PromptPay
+  CreditCard
+  BankTransfer
+  Wallet
+}
+
+enum PaymentStatus {
+  Pending
+  Success
+  Failed
+  Cancelled
+  Refunded
+}
+
+enum ClaimStatus {
+  PENDING    // รอตรวจสอบ
+  APPROVED   // อนุมัติแล้ว
+  PAID       // จ่ายเงินแล้ว
+  REJECTED   // ปฏิเสธ
 }
 
 // ========================================
@@ -17,20 +79,46 @@ model User {
   id          Int      @id @default(autoincrement())
   username    String   @unique
   phoneNumber String   @unique @map("phone_number")
+  email       String?  @unique
+  
+  // Auth & Security
   passwordHash String   @map("password_hash")
-  role        String   @default("USER") @map("role") // USER, ADMIN, SUPER_ADMIN
-  kycStatus   String   @default("Unverified") @map("kyc_status") // "Verified" or "Unverified"
-  createdAt   DateTime @default(now()) @map("created_at")
-
+  role        Role     @default(USER)
+  kycStatus   KycStatus @default(Unverified) @map("kyc_status")
+  
+  // Email verification
+  emailVerified Boolean  @default(false) @map("email_verified")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  
+  // Two-factor authentication
+  twoFactorEnabled Boolean @default(false) @map("two_factor_enabled")
+  twoFactorSecret  String? @map("two_factor_secret")
+  
+  // Profile
+  firstName   String?  @map("first_name")
+  lastName    String?  @map("last_name")
+  dateOfBirth DateTime? @map("date_of_birth")
+  idCard      String?  @unique @map("id_card") // เลขบัตรประชาชน
+  
+  // Banking info (for prize claims)
+  bankName    String?  @map("bank_name")
+  bankAccount String?  @map("bank_account")
+  bankAccountName String? @map("bank_account_name")
+  
   // User management fields
-  isBanned    Boolean  @default(false)
-  bannedAt    DateTime?
-  bannedReason String?
+  isBanned    Boolean  @default(false) @map("is_banned")
+  bannedAt    DateTime? @map("banned_at")
+  bannedReason String? @map("banned_reason")
+  lastLoginAt DateTime? @map("last_login_at")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   orders        Order[]
   wishlists     Wishlist[]
   notifications Notification[]
   claims        Claim[]
+  auditLogs     AuditLog[]
 
   @@map("users")
 }
@@ -41,19 +129,39 @@ model User {
 model Round {
   id              Int       @id @default(autoincrement())
   name            String
-  drawDate        DateTime
-  openSellingAt   DateTime
-  closeSellingAt  DateTime
-  status          String    @default("OPEN") // OPEN, CLOSED, DRAWN
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  slug            String?   @unique // URL-friendly (Optional for migration compatibility)
+  drawDate        DateTime  @map("draw_date")
+  
+  // Selling period
+  openSellingAt   DateTime  @map("open_selling_at")
+  closeSellingAt  DateTime  @map("close_selling_at")
+  
+  // Status
+  status          RoundStatus @default(UPCOMING)
+  
+  // Pricing & Inventory
+  ticketPrice Decimal  @default(80) @map("ticket_price")
+  totalTickets Int?     @map("total_tickets") // จำนวนสลากทั้งหมด
+  soldTickets  Int      @default(0) @map("sold_tickets")
+  
+  // Prize configuration
+  prizeConfig Json?     @map("prize_config") // { firstPrize: 6000000, ... }
   
   // Prize announcement fields
-  winningNumbers  String?     // Stores prize tiers and winning numbers (SQLite Compat)
-  resultsAnnouncedAt DateTime?
+  winningNumbers  Json?     @map("winning_numbers") // { firstPrize: ["123456"], ... }
+  resultsAnnouncedAt DateTime? @map("results_announced_at")
+  
+  // SEO & Marketing
+  description String?
+  thumbnail   String?
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
   
   tickets         Ticket[]
   orders          Order[]
+
+  @@map("rounds")
 }
 
 // ========================================
@@ -62,24 +170,38 @@ model Round {
 model Ticket {
   id        BigInt   @id @default(autoincrement())
   roundId   Int      @map("round_id")
+  
+  // Ticket info
   number    String   // เลข 6 หลัก
   price     Decimal
   setSize   Int      @default(1) @map("set_size") // 1, 2, 5 (จำนวนใบในชุด)
-  status    String   @default("Available") // "Available", "Reserved", "Sold"
-  imageUrl  String?  @map("image_url") // รูปสลากจริง
-  createdAt DateTime @default(now()) @map("created_at")
   
+  // Status
+  status    TicketStatus   @default(Available) // "Available", "Reserved", "Sold"
+  
+  // Serial & Batch
+  serialNumber String?  @unique @map("serial_number")
+  batchId      String?  @map("batch_id")
+
+  // Media
+  imageUrl  String?  @map("image_url") // รูปสลากจริง
+
   // Prize tracking fields
   prizeAmount    Decimal   @default(0) @map("prize_amount")
   prizeTier      String?   @map("prize_tier") // firstPrize, nearby, threeDigit, twoDigit
   prizeCheckedAt DateTime? @map("prize_checked_at")
 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
   round      Round       @relation(fields: [roundId], references: [id])
   orderItems OrderItem[]
   claims     Claim[]
 
+  @@unique([roundId, number]) // Prevent duplicates in same round
   @@index([number]) // Index สำหรับการค้นหาเร็ว
   @@index([roundId, status])
+  @@index([status])
   @@map("tickets")
 }
 
@@ -88,18 +210,42 @@ model Ticket {
 // ========================================
 model Order {
   id          BigInt    @id @default(autoincrement())
+  orderNumber String?   @unique @map("order_number") // e.g., "ORD-2024-001234"
+  
   userId      Int       @map("user_id")
   roundId     Int?      @map("round_id")
+  
+  // Amounts
+  subtotal    Decimal?   // ราคารวม (ก่อนส่วนลด)
+  discount    Decimal   @default(0)
   totalAmount Decimal   @map("total_amount")
-  status      String    @default("Pending") // "Pending", "Paid", "Cancelled", "Expired"
-  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  // Status
+  status      OrderStatus    @default(Pending) // "Pending", "Paid", "Cancelled", "Expired"
+  
+  // Payment
+  paymentMethod String?   @map("payment_method") // Keep string for now or migrate to Enum if possible
+  paidAt        DateTime? @map("paid_at")
+  
+  // Reservation
   expireAt    DateTime? @map("expire_at") // เวลาหมดอายุการจอง (15 นาที)
+
+  // Delivery
+  deliveryMethod String?  @map("delivery_method")
+  deliveryStatus String?  @map("delivery_status")
+  trackingNumber String?  @map("tracking_number")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   user     User        @relation(fields: [userId], references: [id])
   round    Round?      @relation(fields: [roundId], references: [id])
   items    OrderItem[]
   payments Payment[]
 
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
   @@map("orders")
 }
 
@@ -124,14 +270,24 @@ model OrderItem {
 model Payment {
   id           BigInt    @id @default(autoincrement())
   orderId      BigInt    @map("order_id")
+  
   amount       Decimal
-  method       String    // "PromptPay", "CreditCard"
+  method       String    // "PromptPay", "CreditCard" (Keep String for flexibility or migrate to Enum)
+  status       String    @default("Pending") // "Success", "Failed" (Keep String or migrate to Enum)
+  
+  // Gateway info
   gatewayRefId String?   @map("gateway_ref_id") // Ref จากธนาคาร
-  status       String    @default("Pending") // "Success", "Failed"
+  gatewayResponse Json?  @map("gateway_response")
+  qrPayload       String? @map("qr_payload")
+
   paidAt       DateTime? @map("paid_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   order Order @relation(fields: [orderId], references: [id])
 
+  @@index([orderId])
+  @@index([gatewayRefId])
   @@map("payments")
 }
 
@@ -140,18 +296,35 @@ model Payment {
 // ========================================
 model Claim {
   id              BigInt    @id @default(autoincrement())
+  claimNumber     String?   @unique @map("claim_number")
+  
   ticketId        BigInt    @map("ticket_id")
   userId          Int       @map("user_id")
+  
   amount          Decimal
-  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  status          ClaimStatus    @default(PENDING) // PENDING, APPROVED, REJECTED, PAID
+  
+  // Payment info for claim
+  paymentMethod   String?   @map("payment_method")
+  bankName        String?   @map("bank_name")
+  bankAccount     String?   @map("bank_account")
+  
+  // Processing
   claimedAt       DateTime  @default(now()) @map("claimed_at")
   processedAt     DateTime? @map("processed_at")
   processedBy     Int?      @map("processed_by")
   rejectionReason String?   @map("rejection_reason")
+  
+  // Documents
+  documents       Json?
+
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   ticket Ticket @relation(fields: [ticketId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
 
+  @@index([userId])
+  @@index([status])
   @@map("claims")
 }
 
@@ -200,4 +373,47 @@ model SystemConfig {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("system_configs")
+}
+
+// ========================================
+// Analytics
+// ========================================
+model Analytics {
+  id        BigInt   @id @default(autoincrement())
+  
+  date      DateTime @db.Date
+  metric    String   // "daily_sales", "active_users"
+  value     Decimal
+  metadata  Json?
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@unique([date, metric])
+  @@index([metric, date])
+  @@map("analytics")
+}
+
+// ========================================
+// Audit Logs
+// ========================================
+model AuditLog {
+  id        BigInt   @id @default(autoincrement())
+  
+  userId    Int?     @map("user_id") // Null for system actions
+  action    String   // "user.ban", "round.create"
+  resource  String   // "User", "Round"
+  resourceId String? @map("resource_id")
+  
+  changes   Json?    // { before: {...}, after: {...} }
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User? @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
