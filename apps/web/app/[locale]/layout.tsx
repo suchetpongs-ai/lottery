@@ -72,6 +72,7 @@ export async function generateMetadata({
             index: true,
             follow: true,
         },
+        keywords: ['lottery', 'digital lottery', 'buy lottery online', 'lao lottery', 'thai lottery', 'หวย', 'สลากกินแบ่ง', 'ซื้อหวยออนไลน์', 'ສະຫຼາກ', 'ຫວຍ'],
     };
 }
 
@@ -103,15 +104,29 @@ export default async function LocaleLayout({
                     dangerouslySetInnerHTML={{
                         __html: JSON.stringify({
                             "@context": "https://schema.org",
-                            "@type": "WebSite",
-                            "name": "ສະຫຼາກດິຈິທອລ",
-                            "alternateName": ["สลากดิจิทัล", "Digital Lottery"],
-                            "url": "https://hauythai.com",
-                            "potentialAction": {
-                                "@type": "SearchAction",
-                                "target": "https://hauythai.com/browse?q={search_term_string}",
-                                "query-input": "required name=search_term_string"
-                            }
+                            "@graph": [
+                                {
+                                    "@type": "WebSite",
+                                    "name": "ສະຫຼາກດິຈິທອລ",
+                                    "alternateName": ["สลากดิจิทัล", "Digital Lottery"],
+                                    "url": "https://hauythai.com",
+                                    "potentialAction": {
+                                        "@type": "SearchAction",
+                                        "target": "https://hauythai.com/browse?q={search_term_string}",
+                                        "query-input": "required name=search_term_string"
+                                    }
+                                },
+                                {
+                                    "@type": "Organization",
+                                    "name": "Digital Lottery",
+                                    "url": "https://hauythai.com",
+                                    "logo": "https://hauythai.com/favicon.ico",
+                                    "sameAs": [
+                                        "https://facebook.com/digitallottery",
+                                        "https://twitter.com/digitallottery"
+                                    ]
+                                }
+                            ]
                         })
                     }}
                 />

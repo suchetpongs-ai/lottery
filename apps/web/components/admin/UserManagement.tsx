@@ -8,6 +8,7 @@ interface User {
     id: number;
     username: string;
     phoneNumber: string;
+    role: string;
     createdAt: string;
     isBanned: boolean;
     bannedAt?: string;
@@ -36,7 +37,8 @@ export function UserManagement() {
             if (filterBanned !== undefined) params.isBanned = filterBanned;
 
             const response = await api.get('/admin/users', { params });
-            setUsers(response.data.users);
+            // Ensure users have role field, default to USER if missing in older records view
+            setUsers(response.data.users.map((u: any) => ({ ...u, role: u.role || 'USER' })));
             setTotalPages(response.data.totalPages);
         } catch (err) {
             console.error('Failed to fetch users:', err);
@@ -65,6 +67,17 @@ export function UserManagement() {
             fetchUsers();
         } catch (err: any) {
             alert(err.response?.data?.message || 'Failed to unban user');
+        }
+    };
+
+    const handleRoleChange = async (userId: number, newRole: string) => {
+        try {
+            await api.put(`/admin/users/${userId}/role`, { role: newRole });
+            // Optimistic update
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+        } catch (err: any) {
+            alert(err.response?.data?.message || 'Failed to update role');
+            fetchUsers(); // Revert on failure
         }
     };
 
@@ -146,6 +159,7 @@ export function UserManagement() {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">ID</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">ชื่อผู้ใช้</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">เบอร์โทร</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">ระดับ</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">คำสั่งซื้อ</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">สถานะ</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">การกระทำ</th>
@@ -157,6 +171,18 @@ export function UserManagement() {
                                             <td className="px-6 py-4 text-sm text-gray-300">{user.id}</td>
                                             <td className="px-6 py-4 text-sm font-medium text-white">{user.username}</td>
                                             <td className="px-6 py-4 text-sm text-gray-300">{user.phoneNumber}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-300">
+                                                <select
+                                                    value={user.role}
+                                                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                                    className="bg-black/20 border border-white/10 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-primary-400 text-white"
+                                                    disabled={user.role === 'SUPER_ADMIN'}
+                                                >
+                                                    <option value="USER">USER</option>
+                                                    <option value="ADMIN">ADMIN</option>
+                                                    <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+                                                </select>
+                                            </td>
                                             <td className="px-6 py-4 text-sm text-gray-300">{user._count.orders}</td>
                                             <td className="px-6 py-4">
                                                 {user.isBanned ? (

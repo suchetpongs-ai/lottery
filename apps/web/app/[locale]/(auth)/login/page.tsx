@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 const loginSchema = z.object({
-    phoneNumber: z.string().min(10, 'กรุณากรอกเบอร์โทรศัพท์ให้ครบถ้วน'),
+    phoneNumber: z.string().min(4, 'กรุณากรอกเบอร์โทรศัพท์หรือชื่อผู้ใช้งาน'),
     password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'),
 });
 
@@ -61,8 +61,8 @@ export default function LoginPage() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <Input
                             {...register('phoneNumber')}
-                            label="เบอร์โทรศัพท์"
-                            type="tel"
+                            label="เบอร์โทรศัพท์ หรือ ชื่อผู้ใช้งาน"
+                            type="text"
                             placeholder="0812345678"
                             error={errors.phoneNumber?.message}
                             icon={

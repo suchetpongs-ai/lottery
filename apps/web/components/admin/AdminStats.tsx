@@ -5,10 +5,14 @@ import { api } from '@/lib/api';
 
 interface Stats {
     totalSales: number;
+    salesToday: number;
+    salesYesterday: number;
     ticketsSold: number;
     ticketsAvailable: number;
     activeRounds: number;
     pendingOrders: number;
+    totalUsers: number;
+    newUsersToday: number;
 }
 
 export function AdminStats() {
@@ -18,14 +22,13 @@ export function AdminStats() {
 
     useEffect(() => {
         fetchStats();
-        // Refresh every 30 seconds
         const interval = setInterval(fetchStats, 30000);
         return () => clearInterval(interval);
     }, []);
 
     const fetchStats = async () => {
         try {
-            const response = await api.get('/lottery/stats');
+            const response = await api.get('/admin/stats');
             setStats(response.data);
             setError(null);
         } catch (err: any) {
@@ -53,6 +56,10 @@ export function AdminStats() {
 
     if (!stats) return null;
 
+    const salesGrowth = stats.salesYesterday > 0
+        ? ((stats.salesToday - stats.salesYesterday) / stats.salesYesterday) * 100
+        : 100;
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Total Sales */}
@@ -63,10 +70,18 @@ export function AdminStats() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
+                    {stats.salesToday > 0 && (
+                        <span className={`text-xs px-2 py-1 rounded-full ${salesGrowth >= 0 ? 'bg-success/20 text-success' : 'bg-error/20 text-error'}`}>
+                            {salesGrowth >= 0 ? '+' : ''}{salesGrowth.toFixed(1)}%
+                        </span>
+                    )}
                 </div>
-                <div className="text-sm text-gray-400 mb-1">ยอดขายรวม</div>
+                <div className="text-sm text-gray-400 mb-1">ยอดขายวันนี้</div>
                 <div className="text-3xl font-heading font-bold text-gradient">
-                    ฿ {stats.totalSales.toLocaleString()}
+                    ฿ {stats.salesToday.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500 mt-2">
+                    รวมทั้งหมด ฿ {stats.totalSales.toLocaleString()}
                 </div>
             </div>
 
@@ -83,28 +98,36 @@ export function AdminStats() {
                 <div className="text-3xl font-heading font-bold text-white">
                     {stats.ticketsSold.toLocaleString()}
                 </div>
+                <div className="text-xs text-gray-500 mt-2">
+                    คงเหลือ {stats.ticketsAvailable.toLocaleString()} ใบ
+                </div>
             </div>
 
-            {/* Tickets Available */}
+            {/* Users */}
             <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-warning/20 rounded-lg flex items-center justify-center">
-                        <svg className="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    <div className="w-12 h-12 bg-info/20 rounded-lg flex items-center justify-center">
+                        <svg className="w-6 h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                     </div>
+                    {stats.newUsersToday > 0 && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-info/20 text-info">
+                            +{stats.newUsersToday} วันนี้
+                        </span>
+                    )}
                 </div>
-                <div className="text-sm text-gray-400 mb-1">สลากคงเหลือ</div>
+                <div className="text-sm text-gray-400 mb-1">สมาชิกทั้งหมด</div>
                 <div className="text-3xl font-heading font-bold text-white">
-                    {stats.ticketsAvailable.toLocaleString()}
+                    {stats.totalUsers.toLocaleString()}
                 </div>
             </div>
 
             {/* Active Rounds */}
             <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-error/20 rounded-lg flex items-center justify-center">
-                        <svg className="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-12 h-12 bg-warning/20 rounded-lg flex items-center justify-center">
+                        <svg className="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
@@ -112,6 +135,9 @@ export function AdminStats() {
                 <div className="text-sm text-gray-400 mb-1">งวดที่เปิดอยู่</div>
                 <div className="text-3xl font-heading font-bold text-white">
                     {stats.activeRounds}
+                </div>
+                <div className="text-xs text-gray-500 mt-2">
+                    รอการตรวจสอบ {stats.pendingOrders} คำสั่งซื้อ
                 </div>
             </div>
         </div>

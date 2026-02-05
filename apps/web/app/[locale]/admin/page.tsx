@@ -10,28 +10,43 @@ import { OrdersList } from '@/components/admin/OrdersList';
 import { AnnounceResults } from '@/components/admin/AnnounceResults';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { ClaimManagement } from '@/components/admin/ClaimManagement';
+import { SystemSettings } from '@/components/admin/SystemSettings';
 
-type TabType = 'stats' | 'rounds' | 'tickets' | 'orders' | 'results' | 'users' | 'claims';
+type TabType = 'stats' | 'rounds' | 'tickets' | 'orders' | 'results' | 'users' | 'claims' | 'settings';
 
 export default function AdminDashboard() {
     const router = useRouter();
-    const { user, isAuthenticated } = useAuthStore();
+    const { user, isAuthenticated, hasHydrated } = useAuthStore();
     const [activeTab, setActiveTab] = useState<TabType>('stats');
 
     useEffect(() => {
+        // Wait for hydration to complete
+        if (!hasHydrated) return;
+
         // Redirect if not authenticated
         if (!isAuthenticated) {
             router.push('/login');
         }
-        // TODO: Add admin role check when role system is implemented
-    }, [isAuthenticated, router]);
 
-    if (!isAuthenticated) {
+        // Check for admin role
+        if (user && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+            router.push('/');
+        }
+    }, [isAuthenticated, hasHydrated, router, user]);
+
+    // Show nothing while rehydrating or checking auth
+    if (!hasHydrated || !isAuthenticated) {
+        return null;
+    }
+
+    // Role check for render safety
+    if (user && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
         return null;
     }
 
     const tabs = [
         { id: 'stats' as TabType, label: 'สถิติ', icon: '📊' },
+        { id: 'settings' as TabType, label: 'ตั้งค่าระบบ', icon: '⚙️' },
         { id: 'rounds' as TabType, label: 'สร้างงวด', icon: '➕' },
         { id: 'tickets' as TabType, label: 'อัพโหลดสลาก', icon: '📤' },
         { id: 'results' as TabType, label: 'ประกาศผล', icon: '🎉' },
@@ -73,6 +88,7 @@ export default function AdminDashboard() {
                 {/* Tab Content */}
                 <div className="animate-fadeIn">
                     {activeTab === 'stats' && <AdminStats />}
+                    {activeTab === 'settings' && <SystemSettings />}
                     {activeTab === 'rounds' && <CreateRoundForm />}
                     {activeTab === 'tickets' && <UploadTicketsForm />}
                     {activeTab === 'results' && <AnnounceResults />}
