@@ -33,7 +33,6 @@ export default function LoginPage() {
             await loginMutation.mutateAsync(data);
             router.push('/');
         } catch (error: any) {
-        } catch (error: any) {
             console.error('Login failed full error:', error);
             console.error('Response data:', error.response?.data);
             console.error('Response status:', error.response?.status);
