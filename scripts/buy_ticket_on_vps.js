@@ -29,7 +29,7 @@ async function main() {
             phoneNumber: PHONE,
             password: PASSWORD
         });
-        const token = loginRes.data.access_token;
+        const token = loginRes.data.accessToken;
         console.log('✅ Login successful!');
 
         // 2. Search for a ticket
