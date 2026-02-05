@@ -30,13 +30,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://76.13.18.170',
-      'http://76.13.18.170:3000',
-      'https://hauythai.com',
-      'https://www.hauythai.com'
-    ],
+    origin: true, // Allow all origins temporarily for debugging
     credentials: true,
   });
 
