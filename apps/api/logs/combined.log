@@ -10472,3 +10472,11 @@
 {"context":"HTTP","delay":"75ms","level":"info","message":"Response: POST /api/auth/login 201","method":"POST","statusCode":201,"timestamp":"2026-02-05 13:51:57","url":"/api/auth/login"}
 {"context":"HTTP","ip":"::1","level":"info","message":"Incoming Request: GET /api/auth/profile","method":"GET","timestamp":"2026-02-05 13:51:57","url":"/api/auth/profile","userAgent":"node"}
 {"context":"HTTP","delay":"1ms","level":"info","message":"Response: GET /api/auth/profile 200","method":"GET","statusCode":200,"timestamp":"2026-02-05 13:51:57","url":"/api/auth/profile"}
+{"context":"OrderScheduler","level":"info","message":"Running expired orders check...","timestamp":"2026-02-05 13:52:00"}
+{"context":"OrderScheduler","level":"info","message":"No expired orders found.","timestamp":"2026-02-05 13:52:00"}
+{"context":"OrderScheduler","level":"info","message":"Running expired orders check...","timestamp":"2026-02-05 13:53:00"}
+{"context":"OrderScheduler","level":"info","message":"No expired orders found.","timestamp":"2026-02-05 13:53:00"}
+{"context":"OrderScheduler","level":"info","message":"Running expired orders check...","timestamp":"2026-02-05 13:54:00"}
+{"context":"OrderScheduler","level":"info","message":"No expired orders found.","timestamp":"2026-02-05 13:54:00"}
+{"context":"OrderScheduler","level":"info","message":"Running expired orders check...","timestamp":"2026-02-05 13:55:00"}
+{"context":"OrderScheduler","level":"info","message":"No expired orders found.","timestamp":"2026-02-05 13:55:00"}
