@@ -99,7 +99,10 @@ export class TmweasyService {
             throw new BadRequestException('PromptPay ID not configured');
         }
 
-        const payload = promptpay(promptPayId, { amount });
+        // Ensure amount is a number (fix for "amount.toFixed is not a function" error)
+        const numericAmount = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
+
+        const payload = promptpay(promptPayId, { amount: numericAmount });
 
         return {
             type: 'promptpay',
