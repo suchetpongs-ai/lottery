@@ -34,8 +34,9 @@ async function main() {
 
         // 2. Search for a ticket
         console.log('Searching for tickets...');
-        const searchRes = await axiosLib.get(`${API_URL}/lottery/search?q=`);
-        const tickets = searchRes.data.tickets || searchRes.data;
+        const searchRes = await axiosLib.get(`${API_URL}/lottery/search`);
+        // API returns { data: tickets[], pagination: {...} }
+        const tickets = searchRes.data.data || [];
 
         if (tickets.length === 0) {
             console.log('❌ No tickets found. Please run seeding on VPS first!');
