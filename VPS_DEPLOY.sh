@@ -70,6 +70,7 @@ API_URL=http://76.13.18.170/api
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+PROMPTPAY_ID=0637615531
 EOF
 
 # 8. Create Web .env file

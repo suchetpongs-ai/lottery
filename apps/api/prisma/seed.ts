@@ -32,7 +32,7 @@ async function main() {
     for (const num of popularNumbers) {
         await prisma.ticket.create({
             data: {
-                id: BigInt(ticketIdCounter++),
+                // id: Auto-increment
                 roundId: round.id,
                 number: num,
                 price: 80,
@@ -47,7 +47,7 @@ async function main() {
         const randomNum = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
         await prisma.ticket.create({
             data: {
-                id: BigInt(ticketIdCounter++),
+                // id: Auto-increment
                 roundId: round.id,
                 number: randomNum,
                 price: 80,
