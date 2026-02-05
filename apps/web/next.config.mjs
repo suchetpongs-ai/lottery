@@ -23,7 +23,7 @@ const nextConfig = {
 
     // Remove console logs in production
     compiler: {
-        removeConsole: process.env.NODE_ENV === 'production',
+        removeConsole: false, // process.env.NODE_ENV === 'production',
     },
 
     // Experimental features for better performance

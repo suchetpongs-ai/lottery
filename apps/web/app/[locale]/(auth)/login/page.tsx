@@ -33,7 +33,10 @@ export default function LoginPage() {
             await loginMutation.mutateAsync(data);
             router.push('/');
         } catch (error: any) {
-            console.error('Login failed:', error);
+        } catch (error: any) {
+            console.error('Login failed full error:', error);
+            console.error('Response data:', error.response?.data);
+            console.error('Response status:', error.response?.status);
         }
     };
 
@@ -89,7 +92,9 @@ export default function LoginPage() {
                         {loginMutation.isError && (
                             <div className="p-3 rounded-lg bg-error/10 border border-error/20">
                                 <p className="text-sm text-error">
-                                    เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง
+                                    {(loginMutation.error as any)?.response?.data?.message ||
+                                        (loginMutation.error as any)?.message ||
+                                        'เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง'}
                                 </p>
                             </div>
                         )}
