@@ -17,7 +17,7 @@ async function main() {
             drawDate: new Date('2026-02-16'),
             openSellingAt: new Date('2026-01-01'),
             closeSellingAt: new Date('2026-02-15'),
-            status: 'Open',
+            status: 'OPEN',
         },
     });
     console.log(`✅ Created Round ID: ${round.id}`);
