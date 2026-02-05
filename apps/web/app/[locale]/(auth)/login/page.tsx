@@ -137,6 +137,9 @@ export default function LoginPage() {
                 <p className="text-center mt-6 text-sm text-gray-500">
                     ระบบสลากกินแบ่งรัฐบาลออนไลน์
                 </p>
+                <p className="text-center mt-2 text-xs text-gray-600 font-mono">
+                    Debug API: {process.env.NEXT_PUBLIC_API_URL || 'Not Set'}
+                </p>
             </div>
         </div>
     );
