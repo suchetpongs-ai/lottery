@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/lib/stores/auth';
+import { useUser } from '@/lib/api/hooks/useAuth';
 import { AdminStats } from '@/components/admin/AdminStats';
 import { CreateRoundForm } from '@/components/admin/CreateRoundForm';
 import { UploadTicketsForm } from '@/components/admin/UploadTicketsForm';
@@ -16,31 +16,36 @@ type TabType = 'stats' | 'rounds' | 'tickets' | 'orders' | 'results' | 'users' |
 
 export default function AdminDashboard() {
     const router = useRouter();
-    const { user, isAuthenticated, hasHydrated } = useAuthStore();
+    const { data: user, isLoading, isError } = useUser();
     const [activeTab, setActiveTab] = useState<TabType>('stats');
 
     useEffect(() => {
-        // Wait for hydration to complete
-        if (!hasHydrated) return;
+        // Wait for loading to complete
+        if (isLoading) return;
 
-        // Redirect if not authenticated
-        if (!isAuthenticated) {
+        // Redirect if not authenticated or error
+        if (isError || !user) {
             router.push('/login');
+            return;
         }
 
         // Check for admin role
-        if (user && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+        if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
             router.push('/');
         }
-    }, [isAuthenticated, hasHydrated, router, user]);
+    }, [isLoading, isError, user, router]);
 
-    // Show nothing while rehydrating or checking auth
-    if (!hasHydrated || !isAuthenticated) {
-        return null;
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+            </div>
+        );
     }
 
     // Role check for render safety
-    if (user && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
         return null;
     }
 
