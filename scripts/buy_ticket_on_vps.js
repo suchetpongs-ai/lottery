@@ -34,7 +34,7 @@ async function main() {
 
         // 2. Search for a ticket
         console.log('Searching for tickets...');
-        const searchRes = await axiosLib.get(`${API_URL}/tickets/search?q=`);
+        const searchRes = await axiosLib.get(`${API_URL}/lottery/search?q=`);
         const tickets = searchRes.data.tickets || searchRes.data;
 
         if (tickets.length === 0) {
@@ -45,29 +45,26 @@ async function main() {
         const targetTicket = tickets[0];
         console.log(`✅ Found ticket: ${targetTicket.number} (ID: ${targetTicket.id})`);
 
-        // 3. Add to Cart (Optional API step, usually we create order directly from cart items, but let's check API)
-        // Usually POST /orders takes a list of ticketIds.
-        // Checking existing code patterns... usually Order is created from cart or directly.
-        // Let's assume passed ticket ID to POST /orders or checkout.
-
-        // Let's try creating an order with one ticket.
-        console.log('Creating Order...');
-        const orderRes = await axiosLib.post(`${API_URL}/orders`, {
-            items: [{ ticketId: targetTicket.id, amount: 1 }]
+        // 3. Checkout
+        console.log('Creating Order (Checkout)...');
+        const orderRes = await axiosLib.post(`${API_URL}/order/checkout`, {
+            ticketIds: [targetTicket.id]
         }, {
             headers: { Authorization: `Bearer ${token}` }
         });
 
-        // If structure differs, adjust.
-        // Based on typical implementation: POST /orders { items: [...] }
         const order = orderRes.data;
-        console.log(`✅ Order Created! ID: ${order.id}, Amount: ${order.totalAmount}`);
+        // Adjust if response structure is different (e.g. orderRes.data.order)
+        const orderId = order.id || order.order?.id;
+        const totalAmount = order.totalAmount || order.order?.totalAmount;
+
+        console.log(`✅ Order Created! ID: ${orderId}, Amount: ${totalAmount}`);
 
         // 4. Generate QR
         console.log('Generating Payment QR...');
         const qrRes = await axiosLib.post(`${API_URL}/payment/tmweasy/create`, {
-            orderId: order.id,
-            amount: order.totalAmount
+            orderId: orderId,
+            amount: totalAmount
         }, {
             headers: { Authorization: `Bearer ${token}` }
         });
