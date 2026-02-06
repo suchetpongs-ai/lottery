@@ -112,6 +112,11 @@ export class UserManagementService {
             throw new NotFoundException(`User ${userId} not found`);
         }
 
+        // Validate that the role string is a valid enum value
+        if (!Object.values(Role).includes(role as Role)) {
+            throw new Error(`Invalid role: ${role}`);
+        }
+
         return this.prisma.user.update({
             where: { id: userId },
             data: { role: role as Role },

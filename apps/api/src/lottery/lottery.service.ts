@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SearchTicketsDto, CreateRoundDto } from './dto/lottery.dto';
+import { RoundStatus, TicketStatus } from '@prisma/client';
 
 @Injectable()
 export class LotteryService {
@@ -14,7 +15,7 @@ export class LotteryService {
 
         // Common where conditions
         let where: any = {
-            status: 'Available',
+            status: TicketStatus.Available,
         };
 
         // Round ID logic
@@ -22,7 +23,7 @@ export class LotteryService {
             where.roundId = roundId;
         } else {
             const activeRound = await this.prisma.round.findFirst({
-                where: { status: 'OPEN' },
+                where: { status: RoundStatus.OPEN },
                 orderBy: { drawDate: 'desc' },
             });
 
@@ -157,7 +158,7 @@ export class LotteryService {
                 drawDate,
                 openSellingAt,
                 closeSellingAt,
-                status: 'OPEN', // Use 'OPEN' to match getCurrentRound filter
+                status: RoundStatus.OPEN, // Use 'OPEN' to match getCurrentRound filter
             },
         });
         return round;
@@ -165,7 +166,7 @@ export class LotteryService {
 
     async getCurrentRound() {
         const round = await this.prisma.round.findFirst({
-            where: { status: 'OPEN' },
+            where: { status: RoundStatus.OPEN },
             orderBy: { drawDate: 'desc' },
         });
 
@@ -182,7 +183,7 @@ export class LotteryService {
             where: {
                 // winningNumbers should be not null, or status DRAWN/CLOSED
                 // Let's assume DRAWN status implies results are present
-                status: 'DRAWN',
+                status: RoundStatus.DRAWN,
             },
             orderBy: { drawDate: 'desc' },
             take: 12, // Last 12 rounds
@@ -193,16 +194,16 @@ export class LotteryService {
     async closeRound(roundId: number) {
         return this.prisma.round.update({
             where: { id: roundId },
-            data: { status: 'CLOSED' },
+            data: { status: RoundStatus.CLOSED },
         });
     }
 
     // สถิติสลาก (สำหรับ Admin Dashboard)
     async getTicketStats() {
         const [sold, available, activeRounds] = await Promise.all([
-            this.prisma.ticket.count({ where: { status: 'Sold' } }),
-            this.prisma.ticket.count({ where: { status: 'Available' } }),
-            this.prisma.round.count({ where: { status: 'OPEN' } }),
+            this.prisma.ticket.count({ where: { status: TicketStatus.Sold } }),
+            this.prisma.ticket.count({ where: { status: TicketStatus.Available } }),
+            this.prisma.round.count({ where: { status: RoundStatus.OPEN } }),
         ]);
 
         return { sold, available, activeRounds };
@@ -227,7 +228,7 @@ export class LotteryService {
                     price: t.price,
                     setSize: t.setSize,
                     imageUrl: t.imageUrl,
-                    status: 'Available',
+                    status: TicketStatus.Available,
                 },
             });
             nextId++;
