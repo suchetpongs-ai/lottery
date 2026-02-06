@@ -22,7 +22,7 @@ export class LotteryService {
             where.roundId = roundId;
         } else {
             const activeRound = await this.prisma.round.findFirst({
-                where: { status: 'Open' },
+                where: { status: 'OPEN' },
                 orderBy: { drawDate: 'desc' },
             });
 
@@ -157,7 +157,7 @@ export class LotteryService {
                 drawDate,
                 openSellingAt,
                 closeSellingAt,
-                status: 'Open', // Use 'Open' to match getCurrentRound filter
+                status: 'OPEN', // Use 'OPEN' to match getCurrentRound filter
             },
         });
         return round;
@@ -165,7 +165,7 @@ export class LotteryService {
 
     async getCurrentRound() {
         const round = await this.prisma.round.findFirst({
-            where: { status: 'Open' },
+            where: { status: 'OPEN' },
             orderBy: { drawDate: 'desc' },
         });
 
@@ -193,7 +193,7 @@ export class LotteryService {
     async closeRound(roundId: number) {
         return this.prisma.round.update({
             where: { id: roundId },
-            data: { status: 'Closed' },
+            data: { status: 'CLOSED' },
         });
     }
 
@@ -202,7 +202,7 @@ export class LotteryService {
         const [sold, available, activeRounds] = await Promise.all([
             this.prisma.ticket.count({ where: { status: 'Sold' } }),
             this.prisma.ticket.count({ where: { status: 'Available' } }),
-            this.prisma.round.count({ where: { status: 'Open' } }),
+            this.prisma.round.count({ where: { status: 'OPEN' } }),
         ]);
 
         return { sold, available, activeRounds };

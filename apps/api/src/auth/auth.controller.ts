@@ -25,4 +25,22 @@ export class AuthController {
     async getProfile(@Request() req) {
         return req.user;
     }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('2fa/setup')
+    async setupTwoFactor(@Request() req) {
+        return this.authService.generateTwoFactorSecret(req.user.userId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('2fa/enable')
+    async enableTwoFactor(@Request() req, @Body() body: { code: string }) {
+        return this.authService.enableTwoFactor(req.user.userId, body.code);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('2fa/disable')
+    async disableTwoFactor(@Request() req) {
+        return this.authService.disableTwoFactor(req.user.userId);
+    }
 }

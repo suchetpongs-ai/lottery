@@ -11,6 +11,7 @@ interface RegisterData {
 interface LoginData {
     phoneNumber: string;
     password: string;
+    twoFactorCode?: string;
 }
 
 interface AuthResponse {

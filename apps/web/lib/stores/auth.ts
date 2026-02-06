@@ -1,13 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-interface User {
-    id: number;
-    username: string;
-    phoneNumber: string;
-    role?: string;
-    kycStatus?: string;
-}
+import { User } from '../types';
 
 interface AuthState {
     user: User | null;
@@ -19,6 +12,7 @@ interface AuthState {
     setUser: (user: User) => void;
     setHasHydrated: (state: boolean) => void;
 }
+
 
 export const useAuthStore = create<AuthState>()(
     persist(

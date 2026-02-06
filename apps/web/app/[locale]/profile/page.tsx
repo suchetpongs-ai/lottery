@@ -3,6 +3,7 @@
 import { useUser } from '@/lib/api/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
 
 export default function ProfilePage() {
     const { data: user, isLoading } = useUser();
@@ -77,8 +78,8 @@ export default function ProfilePage() {
                                     </label>
                                     <div className="flex items-center gap-3">
                                         <div className={`px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white font-medium flex-grow flex items-center gap-2 ${user.kycStatus === 'Verified' ? 'text-green-400 border-green-500/30 bg-green-500/10' :
-                                                user.kycStatus === 'Pending' ? 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' :
-                                                    'text-gray-400'
+                                            user.kycStatus === 'Pending' ? 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' :
+                                                'text-gray-400'
                                             }`}>
                                             {user.kycStatus === 'Verified' ? (
                                                 <>
@@ -133,6 +134,9 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 </div>
+
+                {/* 2FA Section */}
+                <TwoFactorSetup />
 
                 {/* Additional Sections (e.g. Activity Log) */}
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">

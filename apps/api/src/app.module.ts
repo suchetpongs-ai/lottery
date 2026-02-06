@@ -15,6 +15,8 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 // import { QueueModule } from './queue/queue.module'; // Temporarily disabled
 import { PaymentModule } from './payment/payment.module';
 import { KYCModule } from './kyc/kyc.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { KYCModule } from './kyc/kyc.module';
     // QueueModule, // Temporarily disabled
     PaymentModule,
     KYCModule,
+    AnalyticsModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [AppService, HttpLoggingInterceptor, AllExceptionsFilter],

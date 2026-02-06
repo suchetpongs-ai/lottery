@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BanUserDto, UserFilterDto } from './dto/user.dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UserManagementService {
     constructor(private prisma: PrismaService) { }
 
     async findAll(filter: UserFilterDto) {
+        // ... (unchanged)
         const { search, isBanned, page = 1, limit = 20 } = filter;
 
         const where: any = {};
@@ -33,6 +35,7 @@ export class UserManagementService {
                     isBanned: true,
                     bannedAt: true,
                     bannedReason: true,
+                    role: true, // Added role selection
                     _count: {
                         select: {
                             orders: true,
@@ -99,6 +102,7 @@ export class UserManagementService {
             },
         });
     }
+
     async updateUserRole(userId: number, role: string) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
@@ -110,9 +114,10 @@ export class UserManagementService {
 
         return this.prisma.user.update({
             where: { id: userId },
-            data: { role },
+            data: { role: role as Role },
         });
     }
+
 
     async getUserStats() {
         const today = new Date();

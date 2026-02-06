@@ -86,10 +86,25 @@ async function main() {
         },
     });
 
+    await prisma.user.upsert({
+        where: { phoneNumber: '0999999999' },
+        update: {
+            role: 'ADMIN' // Ensure role is updated if exists
+        },
+        create: {
+            username: 'admin',
+            phoneNumber: '0999999999',
+            passwordHash: hashedPassword,
+            kycStatus: 'Verified',
+            role: 'ADMIN',
+        },
+    });
+
     console.log('✅ Created test users');
     console.log('\n📝 Test Credentials:');
     console.log('User 1: 0812345678 / password123');
     console.log('User 2: 0887654321 / password123');
+    console.log('Admin:  0999999999 / password123');
 
     console.log('\n✨ Seed completed successfully!');
 }
