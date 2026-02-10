@@ -320,56 +320,67 @@ export class PrizeService {
             twoDigit: 2000,           // 2 พัน
         };
 
+        const wonTiers: string[] = [];
+        let totalPrize = 0;
+
         // Check first prize (6 digits)
         if (ticketNumber === winningNumbers.firstPrize) {
-            return {
-                isWinner: true,
-                prizeTier: 'firstPrize',
-                prizeAmount: PRIZES.firstPrize,
-                message: '🎉 ยินดีด้วย! ถูกรางวัลที่ 1',
-            };
+            wonTiers.push('firstPrize');
+            totalPrize += PRIZES.firstPrize;
         }
 
         // Check nearby (first prize ± 1)
         if (winningNumbers.nearby && winningNumbers.nearby.includes(ticketNumber)) {
-            return {
-                isWinner: true,
-                prizeTier: 'nearby',
-                prizeAmount: PRIZES.nearby,
-                message: '🎉 ยินดีด้วย! ถูกรางวัลข้างเคียงรางวัลที่ 1',
-            };
+            wonTiers.push('nearby');
+            totalPrize += PRIZES.nearby;
         }
 
         // Check 3 digits front
         const front3 = ticketNumber.substring(0, 3);
         if (winningNumbers.threeDigitFront && winningNumbers.threeDigitFront.includes(front3)) {
-            return {
-                isWinner: true,
-                prizeTier: 'threeDigitFront',
-                prizeAmount: PRIZES.threeDigitFront,
-                message: '🎉 ยินดีด้วย! ถูกรางวัล 3 ตัวหน้า',
-            };
+            // Can win multiple times if multiple sets match? usually just once per ticket unless multiple sets
+            // Logic: if the array has duplicates (unlikely for government lottery 3-front), but usually it's 2 numbers.
+            // If the number matches one of them, it wins.
+            // If it matches BOTH (e.g. 123 is both front numbers), it wins double?
+            // Standard Thai rule: 2 prizes for 3-front. If number matches, it wins.
+            // If the winning numbers are [123, 456]. If ticket is 123xxx, it wins.
+            // What if winning numbers are [123, 123]? (Very rare/impossible).
+            // We'll assume simple inclusion for now.
+
+            // Count how many times it matches
+            const matches = winningNumbers.threeDigitFront.filter((n: string) => n === front3).length;
+            for (let i = 0; i < matches; i++) {
+                wonTiers.push('threeDigitFront');
+                totalPrize += PRIZES.threeDigitFront;
+            }
         }
 
         // Check 3 digits back
         const back3 = ticketNumber.substring(3, 6);
         if (winningNumbers.threeDigitBack && winningNumbers.threeDigitBack.includes(back3)) {
-            return {
-                isWinner: true,
-                prizeTier: 'threeDigitBack',
-                prizeAmount: PRIZES.threeDigitBack,
-                message: '🎉 ยินดีด้วย! ถูกรางวัล 3 ตัวท้าย',
-            };
+            const matches = winningNumbers.threeDigitBack.filter((n: string) => n === back3).length;
+            for (let i = 0; i < matches; i++) {
+                wonTiers.push('threeDigitBack');
+                totalPrize += PRIZES.threeDigitBack;
+            }
         }
 
         // Check 2 digits
         const last2 = ticketNumber.substring(4, 6);
         if (winningNumbers.twoDigit && winningNumbers.twoDigit.includes(last2)) {
+            const matches = winningNumbers.twoDigit.filter((n: string) => n === last2).length;
+            for (let i = 0; i < matches; i++) {
+                wonTiers.push('twoDigit');
+                totalPrize += PRIZES.twoDigit;
+            }
+        }
+
+        if (wonTiers.length > 0) {
             return {
                 isWinner: true,
-                prizeTier: 'twoDigit',
-                prizeAmount: PRIZES.twoDigit,
-                message: '🎉 ยินดีด้วย! ถูกรางวัล 2 ตัวท้าย',
+                prizeTier: wonTiers.join(','),
+                prizeAmount: totalPrize,
+                message: `🎉 ยินดีด้วย! คุณถูกรางวัลรวม ${totalPrize.toLocaleString()} บาท`,
             };
         }
 

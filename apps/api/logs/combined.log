@@ -11687,3 +11687,165 @@
 {"context":"RouterExplorer","level":"info","message":"Mapped {/api/analytics/trigger-daily, POST} route","timestamp":"2026-02-06 13:05:40"}
 {"context":"RoutesResolver","level":"info","message":"AuditController {/api/audit-logs}:","timestamp":"2026-02-06 13:05:40"}
 {"context":"RouterExplorer","level":"info","message":"Mapped {/api/audit-logs, GET} route","timestamp":"2026-02-06 13:05:40"}
+{"context":"RoutesResolver","level":"info","message":"AppController {/api}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"AuthController {/api/auth}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/register, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/login, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/profile, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/2fa/setup, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/2fa/enable, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/2fa/disable, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"LotteryController {/api/lottery}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/search, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/ticket/:id, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/round/current, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/results, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/check-prize, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/my-prizes, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/claim-prize, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/my-claims, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/wishlist, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/wishlist, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/wishlist, DELETE} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/check-wishlist/:roundId, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/notifications, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/notifications/unread-count, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/notifications/:id/read, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/notifications/read-all, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/round, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/round/:id/close, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/tickets, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"OrderController {/api/order}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order/checkout, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order/my-orders, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order/:id/pay, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order/:id, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"AdminController {/api/admin}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/stats, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/rounds, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/rounds, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/rounds/:id/announce-results, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/rounds/:id/sync-results, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/users, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/users/:id/ban, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/users/:id/role, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/users/:id/unban, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets/:id, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets/:id, DELETE} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/claims, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/claims/:id/approve, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/claims/:id/reject, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/claims/:id/pay, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/reports/sales, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets/:id, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"SettingsController {/api/admin/settings}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/settings, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/settings, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"PaymentController {/api/payment}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tweasy/create, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tweasy/webhook, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/promptpay/generate-qr, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tmweasy/create, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tmweasy/verify-slip, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tmweasy/webhook, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/credit-card/charge, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/webhook/omise, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/refund/:orderId, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"KYCController {/api/kyc}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/send-otp, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/verify-otp, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/upload, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/status, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/pending, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/:userId/approve, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/:userId/reject, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"AnalyticsController {/api/analytics}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/analytics/dashboard, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/analytics/trigger-daily, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"AuditController {/api/audit-logs}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/audit-logs, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"AppController {/api}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"AuthController {/api/auth}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/register, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/login, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/profile, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/2fa/setup, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/2fa/enable, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/auth/2fa/disable, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"LotteryController {/api/lottery}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/search, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/ticket/:id, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/round/current, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/results, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/check-prize, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/my-prizes, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/claim-prize, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/my-claims, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/wishlist, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/wishlist, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/wishlist, DELETE} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/check-wishlist/:roundId, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/notifications, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/notifications/unread-count, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/notifications/:id/read, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/notifications/read-all, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/round, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/round/:id/close, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/lottery/tickets, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"OrderController {/api/order}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order/checkout, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order/my-orders, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order/:id/pay, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order/:id, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/order, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"AdminController {/api/admin}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/stats, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/rounds, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/rounds, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/rounds/:id/announce-results, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/rounds/:id/sync-results, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/users, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/users/:id/ban, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/users/:id/role, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/users/:id/unban, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets/:id, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets/:id, DELETE} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/claims, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/claims/:id/approve, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/claims/:id/reject, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/claims/:id/pay, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/reports/sales, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/tickets/:id, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"SettingsController {/api/admin/settings}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/settings, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/admin/settings, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"PaymentController {/api/payment}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tweasy/create, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tweasy/webhook, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/promptpay/generate-qr, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tmweasy/create, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tmweasy/verify-slip, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/tmweasy/webhook, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/credit-card/charge, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/webhook/omise, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/payment/refund/:orderId, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"KYCController {/api/kyc}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/send-otp, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/verify-otp, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/upload, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/status, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/pending, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/:userId/approve, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/kyc/:userId/reject, PUT} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"AnalyticsController {/api/analytics}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/analytics/dashboard, GET} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/analytics/trigger-daily, POST} route","timestamp":"2026-02-06 13:25:09"}
+{"context":"RoutesResolver","level":"info","message":"AuditController {/api/audit-logs}:","timestamp":"2026-02-06 13:25:09"}
+{"context":"RouterExplorer","level":"info","message":"Mapped {/api/audit-logs, GET} route","timestamp":"2026-02-06 13:25:09"}

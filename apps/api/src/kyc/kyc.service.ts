@@ -82,12 +82,17 @@ export class KYCService {
             throw new BadRequestException('User already verified');
         }
 
-        // Store KYC data (would create separate KYC table in production)
-        // For now, just update user status to Pending
+        // Store KYC data in the new JSON field
         await this.prisma.user.update({
             where: { id: userId },
             data: {
                 kycStatus: 'Pending', // Pending admin review
+                kycInfo: {
+                    idCardImage: data.idCardImage,
+                    selfieImage: data.selfieImage,
+                    address: data.address,
+                    submittedAt: new Date(),
+                } as any,
             },
         });
 
@@ -107,6 +112,7 @@ export class KYCService {
                 username: true,
                 phoneNumber: true,
                 kycStatus: true,
+                kycInfo: true, // Include KYC data for admin review
                 createdAt: true,
             },
         });

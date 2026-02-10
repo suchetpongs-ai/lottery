@@ -1,293 +1,181 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// SQLite Compatible Schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 // ========================================
-// Enums
+// Users & Auth
 // ========================================
 
-enum Role {
-  USER
-  ADMIN
-  SUPER_ADMIN
-}
-
-enum KycStatus {
-  Unverified
-  Pending
-  Verified
-  Rejected
-}
-
-enum RoundStatus {
-  UPCOMING    // ยังไม่เปิดขาย
-  OPEN        // เปิดขายแล้ว
-  CLOSED      // ปิดรับซื้อแล้ว (รอประกาศผล)
-  DRAWN       // ประกาศผลแล้ว
-  ARCHIVED    // เก็บถาวร
-}
-
-enum TicketStatus {
-  Available   // พร้อมขาย
-  Reserved    // ถูกจองไว้
-  Sold        // ขายแล้ว
-  Cancelled   // ยกเลิก
-}
-
-enum OrderStatus {
-  Pending     // รอชำระเงิน
-  Paid        // ชำระเงินแล้ว
-  Cancelled   // ยกเลิก
-  Expired     // หมดอายุ
-  Refunded    // คืนเงิน
-}
-
-enum PaymentMethod {
-  PromptPay
-  CreditCard
-  BankTransfer
-  Wallet
-}
-
-enum PaymentStatus {
-  Pending
-  Success
-  Failed
-  Cancelled
-  Refunded
-}
-
-enum ClaimStatus {
-  PENDING    // รอตรวจสอบ
-  APPROVED   // อนุมัติแล้ว
-  PAID       // จ่ายเงินแล้ว
-  REJECTED   // ปฏิเสธ
-}
-
-// ========================================
-// โมเดลสมาชิก (Users)
-// ========================================
 model User {
   id          Int      @id @default(autoincrement())
   username    String   @unique
   phoneNumber String   @unique @map("phone_number")
-  email       String?  @unique
-  
-  // Auth & Security
   passwordHash String   @map("password_hash")
-  role        Role     @default(USER)
-  kycStatus   KycStatus @default(Unverified) @map("kyc_status")
+  role        String   @default("USER") // Enum: USER, ADMIN, SUPER_ADMIN
+  kycStatus   String   @default("Unverified") @map("kyc_status") // Enum: Unverified, Pending, Verified, Rejected
+  kycInfo     String?  @map("kyc_info") // JSON string: { idCardImage, selfieImage, address, submittedAt }
   
   // Email verification
   emailVerified Boolean  @default(false) @map("email_verified")
-  emailVerifiedAt DateTime? @map("email_verified_at")
-  
-  // Two-factor authentication
-  twoFactorEnabled Boolean @default(false) @map("two_factor_enabled")
-  twoFactorSecret  String? @map("two_factor_secret")
-  
-  // Profile
-  firstName   String?  @map("first_name")
-  lastName    String?  @map("last_name")
-  dateOfBirth DateTime? @map("date_of_birth")
-  idCard      String?  @unique @map("id_card") // เลขบัตรประชาชน
-  
-  // Banking info (for prize claims)
-  bankName    String?  @map("bank_name")
-  bankAccount String?  @map("bank_account")
-  bankAccountName String? @map("bank_account_name")
-  
-  // User management fields
-  isBanned    Boolean  @default(false) @map("is_banned")
-  bannedAt    DateTime? @map("banned_at")
-  bannedReason String? @map("banned_reason")
-  lastLoginAt DateTime? @map("last_login_at")
-  
+  email       String?  @unique
+
+  // Relations
+  orders      Order[]
+  payments    Payment[]
+  claims      Claim[]
+  wishlist    Wishlist[]
+  notifications Notification[]
+  auditLogs   AuditLog[]
+
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-
-  orders        Order[]
-  wishlists     Wishlist[]
-  notifications Notification[]
-  claims        Claim[]
-  auditLogs     AuditLog[]
 
   @@map("users")
 }
 
 // ========================================
-// งวดสลาก (Rounds)
+// Lottery Core
 // ========================================
+
 model Round {
-  id              Int       @id @default(autoincrement())
-  name            String
-  slug            String?   @unique // URL-friendly (Optional for migration compatibility)
-  drawDate        DateTime  @map("draw_date")
+  id              Int      @id @default(autoincrement())
+  name            String?
+  drawDate        DateTime @map("draw_date")
+  openSellingAt   DateTime @map("open_selling_at")
+  closeSellingAt  DateTime @map("close_selling_at")
   
-  // Selling period
-  openSellingAt   DateTime  @map("open_selling_at")
-  closeSellingAt  DateTime  @map("close_selling_at")
+  ticketPrice     Decimal  @default(80.00) @map("ticket_price")
+  status          String   @default("UPCOMING") // Enum: UPCOMING, OPEN, CLOSED, DRAWN, ARCHIVED
   
-  // Status
-  status          RoundStatus @default(UPCOMING)
-  
-  // Pricing & Inventory
-  ticketPrice Decimal  @default(80) @map("ticket_price")
-  totalTickets Int?     @map("total_tickets") // จำนวนสลากทั้งหมด
-  soldTickets  Int      @default(0) @map("sold_tickets")
-  
+  totalTickets    Int      @default(0) @map("total_tickets")
+  soldTickets     Int      @default(0) @map("sold_tickets")
+
   // Prize configuration
-  prizeConfig Json?     @map("prize_config") // { firstPrize: 6000000, ... }
-  
+  prizeConfig     String?  @map("prize_config") // JSON string: { firstPrize: 6000000, ... }
+
   // Prize announcement fields
-  winningNumbers  Json?     @map("winning_numbers") // { firstPrize: ["123456"], ... }
+  winningNumbers  String?  @map("winning_numbers") // JSON string: { firstPrize: ["123456"], ... }
   resultsAnnouncedAt DateTime? @map("results_announced_at")
-  
-  // SEO & Marketing
-  description String?
-  thumbnail   String?
-  
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  
+
+  // Relations
   tickets         Ticket[]
-  orders          Order[]
+
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@map("rounds")
 }
 
-// ========================================
-// สลาก (Tickets)
-// ========================================
 model Ticket {
-  id        BigInt   @id @default(autoincrement())
-  roundId   Int      @map("round_id")
+  id              BigInt   @id @default(autoincrement()) // LibSQL/SQLite might need handling for BigInt
+  roundId         Int      @map("round_id")
+  number          String   // 6 digits
+  price           Decimal
   
-  // Ticket info
-  number    String   // เลข 6 หลัก
-  price     Decimal
-  setSize   Int      @default(1) @map("set_size") // 1, 2, 5 (จำนวนใบในชุด)
+  status          String   @default("Available") // Enum: Available, Reserved, Sold, Cancelled
   
-  // Status
-  status    TicketStatus   @default(Available) // "Available", "Reserved", "Sold"
-  
-  // Serial & Batch
-  serialNumber String?  @unique @map("serial_number")
-  batchId      String?  @map("batch_id")
+  // Group/Set info
+  setSize         Int      @default(1) @map("set_size") // 1, 2, 5, etc.
+  imageUrl        String?  @map("image_url")
 
-  // Media
-  imageUrl  String?  @map("image_url") // รูปสลากจริง
+  // Prize checking status
+  prizeAmount     Decimal? @default(0) @map("prize_amount")
+  prizeTier       String?  @map("prize_tier")  // e.g. "FirstPrize", "ThreeDigitSuffix"
+  prizeCheckedAt  DateTime? @map("prize_checked_at")
 
-  // Prize tracking fields
-  prizeAmount    Decimal   @default(0) @map("prize_amount")
-  prizeTier      String?   @map("prize_tier") // firstPrize, nearby, threeDigit, twoDigit
-  prizeCheckedAt DateTime? @map("prize_checked_at")
+  // Relations
+  round           Round    @relation(fields: [roundId], references: [id])
+  orderItems      OrderItem[]
+  cartItems       CartItem[] // Added relation to CartItem
+  claims          Claim[]
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  
-  round      Round       @relation(fields: [roundId], references: [id])
-  orderItems OrderItem[]
-  claims     Claim[]
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  @@unique([roundId, number]) // Prevent duplicates in same round
-  @@index([number]) // Index สำหรับการค้นหาเร็ว
-  @@index([roundId, status])
+  @@unique([roundId, number, setSize]) // Allow duplicate numbers if different set sizes (optional)
   @@index([status])
+  @@index([number])
   @@map("tickets")
 }
 
+model CartItem {
+    id        Int      @id @default(autoincrement())
+    userId    Int      @map("user_id") // Optional: if we want persistent carts for logged in users
+    ticketId  BigInt   @map("ticket_id")
+    addedAt   DateTime @default(now()) @map("added_at")
+
+    ticket    Ticket   @relation(fields: [ticketId], references: [id])
+    
+    @@map("cart_items")
+}
+
+
 // ========================================
-// ใบสั่งซื้อ (Orders)
+// Orders & Payment
 // ========================================
+
 model Order {
-  id          BigInt    @id @default(autoincrement())
-  orderNumber String?   @unique @map("order_number") // e.g., "ORD-2024-001234"
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  totalAmount     Decimal  @map("total_amount")
+  status          String   @default("Pending") // Enum: Pending, Paid, Cancelled, Expired, Refunded
   
-  userId      Int       @map("user_id")
-  roundId     Int?      @map("round_id")
+  expireAt        DateTime @map("expire_at")
   
-  // Amounts
-  subtotal    Decimal?   // ราคารวม (ก่อนส่วนลด)
-  discount    Decimal   @default(0)
-  totalAmount Decimal   @map("total_amount")
-  
-  // Status
-  status      OrderStatus    @default(Pending) // "Pending", "Paid", "Cancelled", "Expired"
-  
-  // Payment
-  paymentMethod String?   @map("payment_method") // Keep string for now or migrate to Enum if possible
-  paidAt        DateTime? @map("paid_at")
-  
-  // Reservation
-  expireAt    DateTime? @map("expire_at") // เวลาหมดอายุการจอง (15 นาที)
+  // Payment info
+  paymentMethod   String?  @map("payment_method") // Enum: PromptPay, CreditCard, BankTransfer, Wallet
 
-  // Delivery
-  deliveryMethod String?  @map("delivery_method")
-  deliveryStatus String?  @map("delivery_status")
-  trackingNumber String?  @map("tracking_number")
+  // Relations
+  user            User     @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
 
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  user     User        @relation(fields: [userId], references: [id])
-  round    Round?      @relation(fields: [roundId], references: [id])
-  items    OrderItem[]
-  payments Payment[]
-
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
   @@map("orders")
 }
 
-// ========================================
-// รายการสินค้าในออเดอร์ (Order Items)
-// ========================================
 model OrderItem {
-  id              BigInt  @id @default(autoincrement())
-  orderId         BigInt  @map("order_id")
-  ticketId        BigInt  @map("ticket_id")
-  priceAtPurchase Decimal @map("price_at_purchase")
+  id          Int      @id @default(autoincrement())
+  orderId     Int      @map("order_id")
+  ticketId    BigInt   @map("ticket_id")
+  price       Decimal
 
-  order  Order  @relation(fields: [orderId], references: [id])
-  ticket Ticket @relation(fields: [ticketId], references: [id])
+  order       Order    @relation(fields: [orderId], references: [id])
+  ticket      Ticket   @relation(fields: [ticketId], references: [id])
 
   @@map("order_items")
 }
 
-// ========================================
-// การชำระเงิน (Payments)
-// ========================================
 model Payment {
-  id           BigInt    @id @default(autoincrement())
-  orderId      BigInt    @map("order_id")
-  
-  amount       Decimal
-  method       String    // "PromptPay", "CreditCard" (Keep String for flexibility or migrate to Enum)
-  status       String    @default("Pending") // "Success", "Failed" (Keep String or migrate to Enum)
-  
+  id              Int      @id @default(autoincrement())
+  orderId         Int      @map("order_id")
+  userId          Int      @map("user_id")
+  amount          Decimal
+  method          String   // Enum: PromptPay, CreditCard, ...
+  status          String   @default("Pending") // Enum: Pending, Success, Failed, Cancelled, Refunded
+
   // Gateway info
-  gatewayRefId String?   @map("gateway_ref_id") // Ref จากธนาคาร
-  gatewayResponse Json?  @map("gateway_response")
-  qrPayload       String? @map("qr_payload")
+  gatewayRefId    String?   @map("gateway_ref_id") // Ref จากธนาคาร
+  gatewayResponse String?   @map("gateway_response") // JSON string
+  qrPayload       String?   @map("qr_payload")
+  
+  paidAt          DateTime? @map("paid_at")
 
-  paidAt       DateTime? @map("paid_at")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  order           Order     @relation(fields: [orderId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
 
-  order Order @relation(fields: [orderId], references: [id])
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  @@index([orderId])
-  @@index([gatewayRefId])
   @@map("payments")
 }
 
@@ -302,7 +190,7 @@ model Claim {
   userId          Int       @map("user_id")
   
   amount          Decimal
-  status          ClaimStatus    @default(PENDING) // PENDING, APPROVED, REJECTED, PAID
+  status          String   @default("PENDING") // Enum: PENDING, APPROVED, PAID, REJECTED // PENDING, APPROVED, REJECTED, PAID
   
   // Payment info for claim
   paymentMethod   String?   @map("payment_method")
@@ -316,85 +204,79 @@ model Claim {
   rejectionReason String?   @map("rejection_reason")
   
   // Documents
-  documents       Json?
+  documents       String? // JSON string
 
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  user            User     @relation(fields: [userId], references: [id])
+  ticket          Ticket   @relation(fields: [ticketId], references: [id])
 
-  ticket Ticket @relation(fields: [ticketId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  @@index([userId])
-  @@index([status])
   @@map("claims")
 }
 
 // ========================================
-// เลขโปรด (Wishlist)
+// User Features
 // ========================================
+
 model Wishlist {
   id        Int      @id @default(autoincrement())
   userId    Int      @map("user_id")
-  numbers   String   // JSON array of favorite numbers
+  number    String   // The number they want
+  
+  notified  Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id])
-
-  @@unique([userId])
   @@map("wishlists")
 }
 
-// ========================================
-// การแจ้งเตือน (Notifications)
-// ========================================
 model Notification {
-  id        BigInt   @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   userId    Int      @map("user_id")
-  type      String   // NEW_ROUND, PRIZE_WIN, CLAIM_APPROVED, CLAIM_REJECTED
   title     String
   message   String
-  isRead    Boolean  @default(false) @map("is_read")
-  data      String?  // JSON additional data
+  type      String   // info, win, system, payment
+  read      Boolean  @default(false)
+  
+  // Link to related entity
+  referenceId String? @map("reference_id")
+  referenceType String? @map("reference_type")
+
+  user      User     @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
-
-  @@index([userId, isRead])
   @@map("notifications")
 }
 
 // ========================================
-// การตั้งค่าระบบ (System Config)
+// System & Audit
 // ========================================
+
 model SystemConfig {
   key         String   @id
   value       String
   description String?
-  updatedAt   DateTime @updatedAt @map("updated_at")
 
+  updatedAt   DateTime @updatedAt
+  
   @@map("system_configs")
 }
 
-// ========================================
-// Analytics
-// ========================================
 model Analytics {
-  id        BigInt   @id @default(autoincrement())
-  
-  date      DateTime @db.Date
-  metric    String   // "daily_sales", "active_users"
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  metric    String   // e.g. daily_sales, active_users
   value     Decimal
-  metadata  Json?
-  
-  createdAt DateTime @default(now()) @map("created_at")
-  
+  metadata  String?  // JSON string
+
   @@unique([date, metric])
-  @@index([metric, date])
   @@map("analytics")
 }
 
-// ========================================
-// Audit Logs
 // ========================================
 model AuditLog {
   id        BigInt   @id @default(autoincrement())
@@ -404,7 +286,7 @@ model AuditLog {
   resource  String   // "User", "Round"
   resourceId String? @map("resource_id")
   
-  changes   Json?    // { before: {...}, after: {...} }
+  changes   String?  // JSON string: { before: {...}, after: {...} }
   ipAddress String?  @map("ip_address")
   userAgent String?  @map("user_agent")
   
