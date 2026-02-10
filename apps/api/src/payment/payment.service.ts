@@ -48,7 +48,7 @@ export class PaymentService {
             }
 
             const order = await this.prisma.order.findUnique({
-                where: { id: BigInt(options.orderId) },
+                where: { id: options.orderId },
                 include: {
                     items: {
                         include: {
@@ -93,7 +93,7 @@ export class PaymentService {
                 // Store payment reference
                 await this.prisma.payment.create({
                     data: {
-                        orderId: BigInt(options.orderId),
+                        orderId: options.orderId,
                         amount: options.amount,
                         method: 'tweasy',
                         status: 'Pending',
@@ -144,14 +144,14 @@ export class PaymentService {
             if (status === 'success') {
                 // Update order status
                 await this.prisma.order.update({
-                    where: { id: BigInt(orderId) },
+                    where: { id: orderId },
                     data: { status: 'Paid' },
                 });
 
                 // Update payment record
                 await this.prisma.payment.updateMany({
                     where: {
-                        orderId: BigInt(orderId),
+                        orderId: orderId,
                         method: 'tweasy',
                     },
                     data: {
@@ -166,7 +166,7 @@ export class PaymentService {
             } else if (status === 'failed' || status === 'cancelled') {
                 await this.prisma.payment.updateMany({
                     where: {
-                        orderId: BigInt(orderId),
+                        orderId: orderId,
                         method: 'tweasy',
                     },
                     data: {
@@ -210,7 +210,7 @@ export class PaymentService {
      */
     private async markTicketsAsSold(orderId: number): Promise<void> {
         const order = await this.prisma.order.findUnique({
-            where: { id: BigInt(orderId) },
+            where: { id: orderId },
             include: {
                 items: true,
             },
@@ -233,13 +233,13 @@ export class PaymentService {
     async refundPayment(orderId: number, amount?: number): Promise<void> {
         // ... (refund logic remains similar or updated for TMWeasy later)
         const order = await this.prisma.order.findUnique({
-            where: { id: BigInt(orderId) },
+            where: { id: orderId },
             include: { payments: true },
         });
 
         // Simplified refund for now
         await this.prisma.order.update({
-            where: { id: BigInt(orderId) },
+            where: { id: orderId },
             data: { status: 'Cancelled' },
         });
     }
@@ -250,7 +250,7 @@ export class PaymentService {
     async createTmweasyPromptPay(dto: { orderId: number; amount: number }): Promise<any> {
         try {
             const order = await this.prisma.order.findUnique({
-                where: { id: BigInt(dto.orderId) },
+                where: { id: dto.orderId },
             });
 
             if (!order) throw new BadRequestException('Order not found');
@@ -264,7 +264,7 @@ export class PaymentService {
 
             await this.prisma.payment.create({
                 data: {
-                    orderId: BigInt(dto.orderId),
+                    orderId: dto.orderId,
                     amount: dto.amount,
                     method: 'promptpay', // 'tmweasy_promptpay'
                     gatewayRefId: `ORDER_${dto.orderId}_${Date.now()}`, // Temporary ref until confirmed
@@ -296,7 +296,7 @@ export class PaymentService {
 
     async verifySlipQr(qrPayload: string, orderId: number): Promise<any> {
         try {
-            const order = await this.prisma.order.findUnique({ where: { id: BigInt(orderId) } });
+            const order = await this.prisma.order.findUnique({ where: { id: orderId } });
             if (!order) throw new BadRequestException("Order not found");
 
             const result = await this.tmweasyService.verifySlip(qrPayload, Number(order.totalAmount));
@@ -329,7 +329,7 @@ export class PaymentService {
     async createOmiseCharge(dto: { orderId: number; amount: number; token: string }): Promise<any> {
         try {
             const order = await this.prisma.order.findUnique({
-                where: { id: BigInt(dto.orderId) },
+                where: { id: dto.orderId },
             });
 
             if (!order) throw new BadRequestException('Order not found');
@@ -346,7 +346,7 @@ export class PaymentService {
             // Record payment attempt
             await this.prisma.payment.create({
                 data: {
-                    orderId: BigInt(dto.orderId),
+                    orderId: dto.orderId,
                     amount: dto.amount,
                     method: 'omise', // or 'credit_card'
                     gatewayRefId: charge.id,
@@ -376,7 +376,7 @@ export class PaymentService {
     async createOmisePromptPay(dto: { orderId: number; amount: number }): Promise<any> {
         try {
             const order = await this.prisma.order.findUnique({
-                where: { id: BigInt(dto.orderId) },
+                where: { id: dto.orderId },
             });
 
             if (!order) throw new BadRequestException('Order not found');
@@ -393,7 +393,7 @@ export class PaymentService {
 
             await this.prisma.payment.create({
                 data: {
-                    orderId: BigInt(dto.orderId),
+                    orderId: dto.orderId,
                     amount: dto.amount,
                     method: 'promptpay',
                     gatewayRefId: charge.id,
@@ -452,7 +452,7 @@ export class PaymentService {
 
     private async updateOrderPaid(orderId: number) {
         await this.prisma.order.update({
-            where: { id: BigInt(orderId) },
+            where: { id: orderId },
             data: { status: 'Paid' },
         });
         await this.markTicketsAsSold(orderId);
