@@ -87,12 +87,12 @@ export class KYCService {
             where: { id: userId },
             data: {
                 kycStatus: 'Pending', // Pending admin review
-                kycInfo: {
+                kycInfo: JSON.stringify({
                     idCardImage: data.idCardImage,
                     selfieImage: data.selfieImage,
                     address: data.address,
                     submittedAt: new Date(),
-                } as any,
+                }) as any,
             },
         });
 
