@@ -73,6 +73,11 @@ export class AdminController {
         return this.prizeService.fetchAndSyncResults(parseInt(id));
     }
 
+    @Get('rounds/:id/winners')
+    async getWinningTickets(@Param('id') id: string) {
+        return this.prizeService.getWinningTicketsForRound(parseInt(id));
+    }
+
     @Post('tickets')
     async uploadTickets(@Body() dto: UploadTicketsDto) {
         const tickets = dto.tickets.map(t => ({

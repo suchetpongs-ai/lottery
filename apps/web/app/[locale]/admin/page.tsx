@@ -11,8 +11,9 @@ import { AnnounceResults } from '@/components/admin/AnnounceResults';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { ClaimManagement } from '@/components/admin/ClaimManagement';
 import { SystemSettings } from '@/components/admin/SystemSettings';
+import { WinningTickets } from '@/components/admin/WinningTickets';
 
-type TabType = 'stats' | 'rounds' | 'tickets' | 'orders' | 'results' | 'users' | 'claims' | 'settings';
+type TabType = 'stats' | 'rounds' | 'tickets' | 'orders' | 'results' | 'users' | 'claims' | 'settings' | 'winners';
 
 export default function AdminDashboard() {
     const router = useRouter();
@@ -57,6 +58,7 @@ export default function AdminDashboard() {
         { id: 'results' as TabType, label: 'ประกาศผล', icon: '🎉' },
         { id: 'users' as TabType, label: 'จัดการผู้ใช้', icon: '👥' },
         { id: 'claims' as TabType, label: 'รับเงินรางวัล', icon: '💰' },
+        { id: 'winners' as TabType, label: 'ตรวจสอบผู้ถูกรางวัล', icon: '🏆' },
         { id: 'orders' as TabType, label: 'คำสั่งซื้อ', icon: '🛒' },
     ];
 
@@ -99,6 +101,7 @@ export default function AdminDashboard() {
                     {activeTab === 'results' && <AnnounceResults />}
                     {activeTab === 'users' && <UserManagement />}
                     {activeTab === 'claims' && <ClaimManagement />}
+                    {activeTab === 'winners' && <WinningTickets />}
                     {activeTab === 'orders' && <OrdersList />}
                 </div>
             </div>

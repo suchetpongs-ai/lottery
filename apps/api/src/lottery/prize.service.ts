@@ -390,4 +390,49 @@ export class PrizeService {
             message: 'เสียใจด้วย ไม่ถูกรางวัล',
         };
     }
+
+    /**
+     * Get all winning tickets for a round (for Admin Inspection)
+     */
+    async getWinningTicketsForRound(roundId: number) {
+        const winningTickets = await this.prisma.ticket.findMany({
+            where: {
+                roundId,
+                status: 'Sold',
+                prizeAmount: { gt: 0 },
+            },
+            include: {
+                orderItems: {
+                    where: {
+                        order: { status: 'Paid' }
+                    },
+                    include: {
+                        order: {
+                            include: { user: true }
+                        }
+                    }
+                },
+                claims: true,
+            },
+            orderBy: { prizeAmount: 'desc' }
+        });
+
+        return winningTickets.map(t => {
+            const ownerItem = t.orderItems[0];
+            const user = ownerItem?.order?.user;
+
+            return {
+                id: Number(t.id),
+                number: t.number,
+                prizeAmount: Number(t.prizeAmount),
+                prizeTier: t.prizeTier,
+                owner: user ? {
+                    id: user.id,
+                    username: user.username,
+                    phoneNumber: user.phoneNumber,
+                } : null,
+                claimStatus: t.claims.length > 0 ? t.claims[0].status : 'UNCLAIMED',
+            };
+        });
+    }
 }
