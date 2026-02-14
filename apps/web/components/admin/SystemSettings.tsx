@@ -11,6 +11,7 @@ export function SystemSettings() {
         announcement_text: '',
         contact_phone: '',
         contact_line: '',
+        contact_whatsapp: '',
     });
 
     useEffect(() => {
@@ -99,6 +100,12 @@ export function SystemSettings() {
                         value={settings.contact_line}
                         onChange={(e) => handleChange('contact_line', e.target.value)}
                         placeholder="@hauythai"
+                    />
+                    <Input
+                        label="WhatsApp"
+                        value={settings.contact_whatsapp || ''}
+                        onChange={(e) => handleChange('contact_whatsapp', e.target.value)}
+                        placeholder="08xxxxxxxx"
                     />
                 </div>
 
