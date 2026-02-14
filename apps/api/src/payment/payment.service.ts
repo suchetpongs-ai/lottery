@@ -94,6 +94,7 @@ export class PaymentService {
                 await this.prisma.payment.create({
                     data: {
                         orderId: options.orderId,
+                        userId: order.userId,
                         amount: options.amount,
                         method: 'tweasy',
                         status: 'Pending',
@@ -265,6 +266,8 @@ export class PaymentService {
             await this.prisma.payment.create({
                 data: {
                     orderId: dto.orderId,
+                    orderId: dto.orderId,
+                    userId: order.userId,
                     amount: dto.amount,
                     method: 'promptpay', // 'tmweasy_promptpay'
                     gatewayRefId: `ORDER_${dto.orderId}_${Date.now()}`, // Temporary ref until confirmed
@@ -347,6 +350,7 @@ export class PaymentService {
             await this.prisma.payment.create({
                 data: {
                     orderId: dto.orderId,
+                    userId: order.userId,
                     amount: dto.amount,
                     method: 'omise', // or 'credit_card'
                     gatewayRefId: charge.id,
@@ -394,6 +398,7 @@ export class PaymentService {
             await this.prisma.payment.create({
                 data: {
                     orderId: dto.orderId,
+                    userId: order.userId,
                     amount: dto.amount,
                     method: 'promptpay',
                     gatewayRefId: charge.id,
