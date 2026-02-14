@@ -16,17 +16,9 @@ async function bootstrap() {
   // Use Winston logger
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
-  // Set global prefix (Only in Dev, because Prod Nginx strips /api)
-  const isProduction = process.env.NODE_ENV === 'production';
-  console.log(`[DEBUG] NODE_ENV: ${process.env.NODE_ENV}`);
-  console.log(`[DEBUG] Is Production: ${isProduction}`);
-
-  if (!isProduction) {
-    console.log('[DEBUG] Setting Global Prefix: api');
-    app.setGlobalPrefix('api');
-  } else {
-    console.log('[DEBUG] Skipping Global Prefix (Production)');
-  }
+  // Set global prefix (Always use 'api' to match Nginx proxy)
+  app.setGlobalPrefix('api');
+  console.log('[DEBUG] Setting Global Prefix: api');
 
   // Enable CORS
   app.enableCors({
