@@ -49,13 +49,16 @@ export class AnalyticsService {
         });
 
         return {
-            today: {
-                sales: totalSales._sum.totalAmount || 0,
+            summary: {
+                totalSales: Number(totalSales._sum.totalAmount) || 0,
                 activeUsers,
                 totalOrders,
             },
-            trends: {
-                sales: salesTrend,
+            charts: {
+                salesTrend: salesTrend.map(t => ({
+                    date: t.date.toISOString(),
+                    value: Number(t.value)
+                })),
             },
         };
     }
