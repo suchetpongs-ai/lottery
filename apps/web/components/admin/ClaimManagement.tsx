@@ -22,19 +22,21 @@ interface Claim {
     };
 }
 
+type TabType = 'pending' | 'history';
+
 export function ClaimManagement() {
     const [claims, setClaims] = useState<Claim[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<string>('');
+    const [activeTab, setActiveTab] = useState<TabType>('pending');
 
     useEffect(() => {
         fetchClaims();
-    }, [filter]);
+    }, []);
 
     const fetchClaims = async () => {
         try {
-            const params = filter ? { status: filter } : {};
-            const response = await api.get('/admin/claims', { params });
+            // Fetch all claims
+            const response = await api.get('/admin/claims');
             setClaims(response.data);
         } catch (err) {
             console.error('Failed to fetch claims:', err);
@@ -90,9 +92,9 @@ export function ClaimManagement() {
 
         const labels: Record<string, string> = {
             PENDING: 'รออนุมัติ',
-            APPROVED: 'อนุมัติแล้ว',
+            APPROVED: 'อนุมัติแล้ว (รอโอน)',
             REJECTED: 'ปฏิเสธ',
-            PAID: 'จ่ายแล้ว',
+            PAID: 'จ่ายเงินแล้ว',
         };
 
         return (
@@ -102,28 +104,47 @@ export function ClaimManagement() {
         );
     };
 
+    // Filter claims based on active tab
+    const filteredClaims = claims.filter(claim => {
+        if (activeTab === 'pending') {
+            return claim.status === 'PENDING' || claim.status === 'APPROVED';
+        } else {
+            return claim.status === 'PAID' || claim.status === 'REJECTED';
+        }
+    });
+
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-heading font-bold text-white">
                 💰 จัดการการรับเงินรางวัล
             </h2>
 
-            {/* Filter */}
-            <div className="glass-card p-6">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                    กรองตามสถานะ
-                </label>
-                <select
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="w-full md:w-64 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-400"
-                >
-                    <option value="">ทั้งหมด</option>
-                    <option value="PENDING">รออนุมัติ</option>
-                    <option value="APPROVED">อนุมัติแล้ว</option>
-                    <option value="REJECTED">ปฏิเสธ</option>
-                    <option value="PAID">จ่ายแล้ว</option>
-                </select>
+            {/* Tabs */}
+            <div className="border-b border-white/10">
+                <nav className="-mb-px flex space-x-8">
+                    <button
+                        onClick={() => setActiveTab('pending')}
+                        className={`
+                            whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                            ${activeTab === 'pending'
+                                ? 'border-primary-500 text-primary-400'
+                                : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'}
+                        `}
+                    >
+                        📝 รับเงินรางวัล ({claims.filter(c => c.status === 'PENDING' || c.status === 'APPROVED').length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('history')}
+                        className={`
+                            whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                            ${activeTab === 'history'
+                                ? 'border-primary-500 text-primary-400'
+                                : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'}
+                        `}
+                    >
+                        ✅ รับเงินรางวัลแล้ว / ประวัติ ({claims.filter(c => c.status === 'PAID' || c.status === 'REJECTED').length})
+                    </button>
+                </nav>
             </div>
 
             {/* Claims Table */}
@@ -131,9 +152,9 @@ export function ClaimManagement() {
                 <div className="flex justify-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400"></div>
                 </div>
-            ) : claims.length === 0 ? (
+            ) : filteredClaims.length === 0 ? (
                 <div className="glass-card p-12 text-center text-gray-400">
-                    ไม่พบคำขอรับเงินรางวัล
+                    {activeTab === 'pending' ? 'ไม่มีรายการที่ต้องดำเนินการ' : 'ไม่มีประวัติการจ่ายเงินรางวัล'}
                 </div>
             ) : (
                 <div className="glass-card overflow-hidden">
@@ -146,12 +167,12 @@ export function ClaimManagement() {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">รางวัล</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">จำนวนเงิน</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">สถานะ</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">วันที่ขอ</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">การกระทำ</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">วันที่ขอ/ดำเนินการ</th>
+                                    {activeTab === 'pending' && <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">การกระทำ</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/10">
-                                {claims.map((claim) => (
+                                {filteredClaims.map((claim) => (
                                     <tr key={claim.id} className="hover:bg-white/5">
                                         <td className="px-6 py-4 text-sm font-mono font-bold text-white">
                                             {claim.ticket.number}
@@ -175,37 +196,39 @@ export function ClaimManagement() {
                                         <td className="px-6 py-4 text-sm text-gray-400">
                                             {new Date(claim.claimedAt).toLocaleDateString('th-TH')}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            {claim.status === 'PENDING' && (
-                                                <div className="flex gap-2">
+                                        {activeTab === 'pending' && (
+                                            <td className="px-6 py-4">
+                                                {claim.status === 'PENDING' && (
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            variant="primary"
+                                                            size="sm"
+                                                            onClick={() => handleApprove(claim.id)}
+                                                            className="bg-success hover:bg-success/80"
+                                                        >
+                                                            ✓ อนุมัติ
+                                                        </Button>
+                                                        <Button
+                                                            variant="primary"
+                                                            size="sm"
+                                                            onClick={() => handleReject(claim.id)}
+                                                            className="bg-error hover:bg-error/80"
+                                                        >
+                                                            × ปฏิเสธ
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                                {claim.status === 'APPROVED' && (
                                                     <Button
                                                         variant="primary"
                                                         size="sm"
-                                                        onClick={() => handleApprove(claim.id)}
-                                                        className="bg-success hover:bg-success/80"
+                                                        onClick={() => handleMarkAsPaid(claim.id)}
                                                     >
-                                                        ✓ อนุมัติ
+                                                        💰 แจ้งโอนเงิน
                                                     </Button>
-                                                    <Button
-                                                        variant="primary"
-                                                        size="sm"
-                                                        onClick={() => handleReject(claim.id)}
-                                                        className="bg-error hover:bg-error/80"
-                                                    >
-                                                        × ปฏิเสธ
-                                                    </Button>
-                                                </div>
-                                            )}
-                                            {claim.status === 'APPROVED' && (
-                                                <Button
-                                                    variant="primary"
-                                                    size="sm"
-                                                    onClick={() => handleMarkAsPaid(claim.id)}
-                                                >
-                                                    💰 ทำเครื่องหมายว่าจ่ายแล้ว
-                                                </Button>
-                                            )}
-                                        </td>
+                                                )}
+                                            </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>
