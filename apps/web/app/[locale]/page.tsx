@@ -27,10 +27,10 @@ export default function Home() {
         <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
           {/* Main Heading */}
           <div className="mb-8 animate-slide-down">
-            <h1 className="text-6xl md:text-8xl font-heading font-black mb-4">
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-heading font-black mb-4">
               <span className="text-gradient">{t('title')}</span>
             </h1>
-            <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-6">
+            <h2 className="text-xl sm:text-3xl md:text-5xl font-heading font-bold text-white mb-6">
               {t('heroSubtitle')}
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -41,18 +41,18 @@ export default function Home() {
           {/* Search Bar */}
           <div className="mb-12 animate-slide-up">
             <div className="glass-card p-3 max-w-2xl mx-auto">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="text"
                   placeholder={t('searchPlaceholder')}
                   value={searchNumber}
                   onChange={(e) => setSearchNumber(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="flex-1 px-6 py-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 text-lg"
+                  className="w-full px-4 py-3 sm:px-6 sm:py-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base sm:text-lg"
                   maxLength={6}
                 />
-                <Link href={`/browse?number=${searchNumber}`}>
-                  <Button variant="primary" size="lg" className="px-8">
-                    <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <Link href={`/browse?number=${searchNumber}`} className="w-full sm:w-auto">
+                  <Button variant="primary" size="lg" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 justify-center">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     {t('searchButton')}
@@ -63,10 +63,10 @@ export default function Home() {
           </div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-16">
-            <Link href="/browse">
-              <Button variant="primary" size="lg" className="px-8 py-4 text-lg">
-                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
+            <Link href="/browse" className="w-full sm:w-auto">
+              <Button variant="primary" size="lg" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg justify-center">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
                 {t('cta.button')}
@@ -75,14 +75,14 @@ export default function Home() {
 
             {/* Show Register button only if not logged in */}
             {!user ? (
-              <Link href="/register">
-                <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
+              <Link href="/register" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg justify-center">
                   {t('howItWorks.step1.title')}
                 </Button>
               </Link>
             ) : (
-              <Link href="/orders">
-                <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
+              <Link href="/orders" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg justify-center">
                   {t('searchPlaceholder').includes('My Orders') ? 'My Orders' : 'คำสั่งซื้อของฉัน'} {/* Fallback logic or utilize nav.orders */}
                 </Button>
               </Link>

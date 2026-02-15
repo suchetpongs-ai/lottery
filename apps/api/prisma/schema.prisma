@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -41,6 +41,11 @@ model User {
   lastLoginAt      DateTime? @map("last_login_at")
   twoFactorSecret  String?   @map("two_factor_secret")
   twoFactorEnabled Boolean   @default(false) @map("two_factor_enabled")
+
+  // Ban status
+  isBanned      Boolean   @default(false) @map("is_banned")
+  bannedAt      DateTime? @map("banned_at")
+  bannedReason  String?   @map("banned_reason")
 
   @@map("users")
 }
@@ -104,6 +109,10 @@ model Ticket {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
+  // Locking for updates
+  lockedBy        Int?     @map("locked_by")
+  lockedAt        DateTime? @map("locked_at")
+
   @@unique([roundId, number, setSize]) // Allow duplicate numbers if different set sizes (optional)
   @@index([status])
   @@index([number])
@@ -144,6 +153,7 @@ model Order {
 
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
+  paidAt          DateTime? @map("paid_at")
 
   @@map("orders")
 }

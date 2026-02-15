@@ -10,20 +10,27 @@ export class WishlistService {
         // Store as JSON string
         const numbersJson = JSON.stringify(dto.numbers);
 
-        return this.prisma.wishlist.upsert({
+        const existing = await this.prisma.wishlist.findFirst({
             where: { userId },
-            create: {
+        });
+
+        if (existing) {
+            return this.prisma.wishlist.update({
+                where: { id: existing.id },
+                data: { number: numbersJson },
+            });
+        }
+
+        return this.prisma.wishlist.create({
+            data: {
                 userId,
-                numbers: numbersJson,
-            },
-            update: {
-                numbers: numbersJson,
+                number: numbersJson,
             },
         });
     }
 
     async getWishlist(userId: number) {
-        const wishlist = await this.prisma.wishlist.findUnique({
+        const wishlist = await this.prisma.wishlist.findFirst({
             where: { userId },
         });
 
@@ -32,13 +39,12 @@ export class WishlistService {
         }
 
         return {
-            numbers: JSON.parse(wishlist.numbers),
-            updatedAt: wishlist.updatedAt,
+            numbers: JSON.parse(wishlist.number),
         };
     }
 
     async deleteWishlist(userId: number) {
-        return this.prisma.wishlist.delete({
+        return this.prisma.wishlist.deleteMany({
             where: { userId },
         });
     }

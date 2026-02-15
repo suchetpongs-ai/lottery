@@ -25,6 +25,11 @@ async function main() {
     // 2. สร้างสลากตัวอย่าง
     console.log('Creating Sample Tickets...');
 
+    // Clean up existing tickets for this round to avoid ID conflicts
+    await prisma.ticket.deleteMany({
+        where: { roundId: round.id }
+    });
+
     const popularNumbers = ['123456', '888888', '999999', '000001', '111111'];
     let ticketIdCounter = 1;
 
@@ -32,7 +37,7 @@ async function main() {
     for (const num of popularNumbers) {
         await prisma.ticket.create({
             data: {
-                // id: Auto-increment
+                id: BigInt(ticketIdCounter++), // Manual ID
                 roundId: round.id,
                 number: num,
                 price: 80,
@@ -47,7 +52,7 @@ async function main() {
         const randomNum = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
         await prisma.ticket.create({
             data: {
-                // id: Auto-increment
+                id: BigInt(ticketIdCounter++), // Manual ID
                 roundId: round.id,
                 number: randomNum,
                 price: 80,

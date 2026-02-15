@@ -36,25 +36,27 @@ export function Navbar() {
     return (
         <>
             <nav className="fixed top-0 left-0 right-0 z-30 glass-card border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-4">
+                <div className="max-w-7xl mx-auto px-2 sm:px-4">
                     <div className="flex items-center justify-between h-16">
-                        {/* Mobile Menu Button */}
-                        <button
-                            className="md:hidden p-2 text-gray-300 hover:text-primary-400 transition-colors"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Toggle menu"
-                        >
-                            {isMobileMenuOpen ? (
-                                <CloseIcon />
-                            ) : (
-                                <MenuIcon />
-                            )}
-                        </button>
+                        {/* Mobile Menu Button - Left */}
+                        <div className="flex items-center md:hidden">
+                            <button
+                                className="p-2 text-gray-300 hover:text-primary-400 transition-colors"
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                aria-label="Toggle menu"
+                            >
+                                {isMobileMenuOpen ? (
+                                    <CloseIcon />
+                                ) : (
+                                    <MenuIcon />
+                                )}
+                            </button>
+                        </div>
 
-                        {/* Logo */}
+                        {/* Logo - Center/Left */}
                         <Link href="/" className="flex items-center gap-2 group">
-                            <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                 </svg>
                             </div>
@@ -63,7 +65,7 @@ export function Navbar() {
                             </span>
                         </Link>
 
-                        {/* Desktop Navigation Links */}
+                        {/* Desktop Navigation Links - Center */}
                         <div className="hidden md:flex items-center gap-6">
                             {navLinks.map((link) => (
                                 <Link
@@ -77,7 +79,7 @@ export function Navbar() {
                         </div>
 
                         {/* Right Side Actions */}
-                        <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-1 sm:gap-3">
                             <LanguageSwitcher />
                             <CartIcon onClick={() => setIsCartOpen(true)} />
                             <UserMenu />

@@ -15,15 +15,18 @@
 
 ---
 
-## 📤 ไฟล์ที่ต้องอัพโหลดทั้งหมด (5 ไฟล์)
+## 🔄 อัพเดท Code (Recommended)
 
+เนื่องจากเราใช้ Git แล้ว สามารถ Pull การแก้ไขล่าสุดได้เลย:
+
+```bash
+cd /var/www/lottery
+git pull origin main
 ```
-1. apps/web/lib/api/hooks/useLottery.ts
-2. apps/web/lib/api/hooks/useOrders.ts
-3. apps/web/components/lottery/TicketCard.tsx
-4. apps/web/app/[locale]/admin/tickets/upload/page.tsx
-5. apps/web/app/[locale]/browse/page.tsx
-```
+
+> **Note**: ถ้ามี Error เรื่อง local changes ให้รัน:
+> `git reset --hard origin/main`
+> `git pull origin main`
 
 ---
 
@@ -34,10 +37,12 @@
 ```bash
 # Clean everything
 cd /var/www/lottery
+git pull origin main
 rm -rf apps/api/dist apps/web/.next apps/web/node_modules/.cache
 
 # Build Backend
 cd /var/www/lottery/apps/api
+npm install
 npm run build
 
 # Verify backend built (ต้องเห็นไฟล์)

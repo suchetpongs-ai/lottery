@@ -134,8 +134,18 @@ export class AdminController {
     }
 
     @Put('tickets/:id')
-    async updateTicket(@Param('id') id: string, @Body() body: any) {
-        return this.lotteryService.updateTicket(parseInt(id), body);
+    async updateTicket(@Param('id') id: string, @Body() body: any, @Request() req) {
+        return this.lotteryService.updateTicket(parseInt(id), body, req.user.userId);
+    }
+
+    @Post('tickets/:id/lock')
+    async lockTicket(@Param('id') id: string, @Request() req) {
+        return this.lotteryService.lockTicket(parseInt(id), req.user.userId);
+    }
+
+    @Post('tickets/:id/unlock')
+    async unlockTicket(@Param('id') id: string, @Request() req) {
+        return this.lotteryService.unlockTicket(parseInt(id), req.user.userId);
     }
 
     @Delete('tickets/:id')

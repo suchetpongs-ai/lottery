@@ -266,7 +266,6 @@ export class PaymentService {
             await this.prisma.payment.create({
                 data: {
                     orderId: dto.orderId,
-                    orderId: dto.orderId,
                     userId: order.userId,
                     amount: dto.amount,
                     method: 'promptpay', // 'tmweasy_promptpay'

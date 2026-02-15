@@ -33,6 +33,18 @@ export class OrderService {
                 );
             }
 
+            // check locks
+            const now = new Date().getTime();
+            const lockedTickets = tickets.filter(t =>
+                t.lockedBy && t.lockedAt && (now - new Date(t.lockedAt).getTime() < 5 * 60 * 1000)
+            );
+
+            if (lockedTickets.length > 0) {
+                throw new BadRequestException(
+                    `Some tickets are temporarily locked by admin: ${lockedTickets.map(t => t.number).join(', ')}`
+                );
+            }
+
             // 3. คำนวณยอดรวม
             const totalAmount = tickets.reduce((sum, ticket) => {
                 return sum + Number(ticket.price);
@@ -44,7 +56,7 @@ export class OrderService {
 
             // Manual ID generation for Order
             const maxOrderId = await tx.order.aggregate({ _max: { id: true } });
-            const nextOrderId = (maxOrderId._max.id || BigInt(0)) + BigInt(1);
+            const nextOrderId = (maxOrderId._max.id || 0) + 1;
 
             const order = await tx.order.create({
                 data: {
@@ -59,7 +71,7 @@ export class OrderService {
             // 5. สร้าง Order Items
             // Manual ID generation for OrderItem
             const maxItemId = await tx.orderItem.aggregate({ _max: { id: true } });
-            let nextItemId = (maxItemId._max.id || BigInt(0)) + BigInt(1);
+            let nextItemId = (maxItemId._max.id || 0) + 1;
 
             for (const ticket of tickets) {
                 await tx.orderItem.create({
@@ -67,21 +79,26 @@ export class OrderService {
                         id: nextItemId,
                         orderId: order.id,
                         ticketId: BigInt(ticket.id),
-                        priceAtPurchase: Number(ticket.price),
+                        price: Number(ticket.price),
                     },
                 });
                 nextItemId++;
             }
 
-            // 6. อัปเดตสถานะสลากเป็น Reserved
-            await tx.ticket.updateMany({
+            // 6. อัปเดตสถานะสลากเป็น Reserved (พร้อมตรวจสอบว่ายังว่างอยู่จริง)
+            const updateResult = await tx.ticket.updateMany({
                 where: {
                     id: { in: tickets.map(t => BigInt(t.id)) },
+                    status: 'Available',
                 },
                 data: {
                     status: 'Reserved',
                 },
             });
+
+            if (updateResult.count !== tickets.length) {
+                throw new BadRequestException('Some tickets were just reserved by another user. Please try again.');
+            }
 
             // 7. คืนค่า Order พร้อมรายละเอียด
             return tx.order.findUnique({
@@ -107,7 +124,7 @@ export class OrderService {
         return this.prisma.$transaction(async (tx) => {
             // 1. Find Order using Prisma ORM (SQLite compatible)
             const order = await tx.order.findUnique({
-                where: { id: BigInt(orderId) },
+                where: { id: orderId },
                 include: { items: true },
             });
 
@@ -127,7 +144,7 @@ export class OrderService {
 
             // 4. อัปเดต Order
             await tx.order.update({
-                where: { id: BigInt(orderId) },
+                where: { id: orderId },
                 data: {
                     status: 'Paid',
                 },
@@ -145,14 +162,14 @@ export class OrderService {
             });
 
             // 6. บันทึก Payment
-            // Manual ID generation for Payment
             const maxPaymentId = await tx.payment.aggregate({ _max: { id: true } });
-            const nextPaymentId = (maxPaymentId._max.id || BigInt(0)) + BigInt(1);
+            const nextPaymentId = (maxPaymentId._max.id || 0) + 1;
 
             await tx.payment.create({
                 data: {
                     id: nextPaymentId,
-                    orderId: BigInt(orderId),
+                    orderId: orderId,
+                    userId: order.userId,
                     amount: order.totalAmount,
                     method: 'Mock',
                     status: 'Success',
@@ -170,7 +187,7 @@ export class OrderService {
     async getOrder(orderId: number, userId: number) {
         const order = await this.prisma.order.findFirst({
             where: {
-                id: BigInt(orderId),
+                id: orderId,
                 userId,
             },
             include: {

@@ -74,26 +74,24 @@ export function UploadTicketsForm() {
         if (ticket.status === 'Sold') return;
 
         try {
-            // Lock the ticket by setting status to Reserved
-            await api.put(`/admin/tickets/${ticket.id}`, { status: 'Reserved' });
+            // Lock the ticket using specific endpoint
+            await api.post(`/admin/tickets/${ticket.id}/lock`);
             setEditingId(ticket.id);
             setEditPrice(ticket.price.toString());
-            // Optimistically update status in UI to reflect lock
-            setTickets(prev => prev.map(t => t.id === ticket.id ? { ...t, status: 'Reserved' } : t));
-        } catch (err) {
-            alert('ไม่สามารถเริ่มแก้ไขได้ (อาจมีคนจองตัดหน้า)');
+            // UI update: Keep status as is, but maybe visual indication can be added if needed
+            // For now, we just enter edit mode. 
+        } catch (err: any) {
+            alert(err.response?.data?.message || 'ไม่สามารถเริ่มแก้ไขได้ (อาจมีคนจองตัดหน้าหรือถูกล็อคโดยแอดมินท่านอื่น)');
             fetchTickets();
         }
     };
 
     const handleCancelEdit = async (id: number) => {
         try {
-            // Unlock by setting status back to Available
-            await api.put(`/admin/tickets/${id}`, { status: 'Available' });
+            // Unlock ticket
+            await api.post(`/admin/tickets/${id}/unlock`);
             setEditingId(null);
             setEditPrice('');
-            // Optimistically update
-            setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'Available' } : t));
         } catch (err) {
             alert('ยกเลิกไม่สำเร็จ กรุณารีเฟรช');
             fetchTickets();
@@ -102,14 +100,15 @@ export function UploadTicketsForm() {
 
     const handleSaveEdit = async (id: number) => {
         try {
-            // Update price AND unlock status
+            // Update price (Backend will auto-unlock)
             await api.put(`/admin/tickets/${id}`, {
                 price: parseFloat(editPrice),
-                status: 'Available'
             });
             setEditingId(null);
             setEditPrice('');
-            fetchTickets(); // Refresh specifically to ensure data consistency
+            fetchTickets();
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 3000);
         } catch (err) {
             alert('บันทึกไม่สำเร็จ');
         }

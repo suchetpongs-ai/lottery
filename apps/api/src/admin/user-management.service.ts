@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BanUserDto, UserFilterDto } from './dto/user.dto';
-import { Role } from '@prisma/client';
+// import { Role } from '@prisma/client'; // Role enum not defined in schema
+
+export const UserRoles = {
+    USER: 'USER',
+    ADMIN: 'ADMIN',
+    SUPER_ADMIN: 'SUPER_ADMIN',
+};
 
 @Injectable()
 export class UserManagementService {
@@ -113,13 +119,14 @@ export class UserManagementService {
         }
 
         // Validate that the role string is a valid enum value
-        if (!Object.values(Role).includes(role as Role)) {
+        const validRoles = Object.values(UserRoles);
+        if (!validRoles.includes(role)) {
             throw new Error(`Invalid role: ${role}`);
         }
 
         return this.prisma.user.update({
             where: { id: userId },
-            data: { role: role as Role },
+            data: { role: role },
         });
     }
 

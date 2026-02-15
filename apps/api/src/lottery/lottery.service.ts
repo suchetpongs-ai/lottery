@@ -1,7 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SearchTicketsDto, CreateRoundDto } from './dto/lottery.dto';
-import { RoundStatus, TicketStatus } from '@prisma/client';
+// import { RoundStatus, TicketStatus } from '@prisma/client'; // Enums not defined in schema
+
+export const RoundStatus = {
+    UPCOMING: 'UPCOMING',
+    OPEN: 'OPEN',
+    CLOSED: 'CLOSED',
+    DRAWN: 'DRAWN',
+    ARCHIVED: 'ARCHIVED',
+};
+
+export const TicketStatus = {
+    Available: 'Available',
+    Reserved: 'Reserved',
+    Sold: 'Sold',
+    Cancelled: 'Cancelled',
+};
 
 @Injectable()
 export class LotteryService {
@@ -269,10 +284,87 @@ export class LotteryService {
     }
 
     // Admin: Update ticket
-    async updateTicket(id: number, data: any) {
-        return this.prisma.ticket.update({
+    async updateTicket(id: number, data: any, adminId?: number) {
+        // Check lock if adminId is provided
+        if (adminId) {
+            const ticket = await this.prisma.ticket.findUnique({
+                where: { id: BigInt(id) },
+                select: { lockedBy: true, lockedAt: true }
+            });
+
+            if (ticket?.lockedBy && ticket.lockedBy !== adminId) {
+                // Check expiration (e.g. 5 mins)
+                const lockTime = ticket.lockedAt ? new Date(ticket.lockedAt).getTime() : 0;
+                const now = new Date().getTime();
+                if (ticket.lockedAt && now - lockTime < 5 * 60 * 1000) {
+                    throw new BadRequestException(`Ticket is currently edited by another admin (ID: ${ticket.lockedBy})`);
+                }
+            }
+        }
+
+        const updated = await this.prisma.ticket.update({
             where: { id: BigInt(id) },
             data,
+        });
+
+        // Auto-unlock after update
+        if (adminId) {
+            await this.unlockTicket(id, adminId);
+        }
+
+        return updated;
+    }
+
+    // Admin: Lock ticket for editing
+    async lockTicket(id: number, adminId: number) {
+        const ticket = await this.prisma.ticket.findUnique({
+            where: { id: BigInt(id) },
+        });
+
+        if (!ticket) throw new NotFoundException('Ticket not found');
+
+        // Check if already locked by someone else
+        if (ticket.lockedBy && ticket.lockedBy !== adminId) {
+            const lockTime = ticket.lockedAt ? new Date(ticket.lockedAt).getTime() : 0;
+            const now = new Date().getTime();
+            if (ticket.lockedAt && now - lockTime < 5 * 60 * 1000) { // 5 minutes lock
+                throw new BadRequestException(`Ticket is currently locked by another admin (ID: ${ticket.lockedBy})`);
+            }
+        }
+
+        return this.prisma.ticket.update({
+            where: { id: BigInt(id) },
+            data: {
+                lockedBy: adminId,
+                lockedAt: new Date(),
+            },
+        });
+    }
+
+    // Admin: Unlock ticket
+    async unlockTicket(id: number, adminId: number) {
+        const ticket = await this.prisma.ticket.findUnique({
+            where: { id: BigInt(id) },
+        });
+
+        if (!ticket) throw new NotFoundException('Ticket not found');
+
+        // Only locker or super admin can unlock (simpler logic: only locker for now)
+        if (ticket.lockedBy && ticket.lockedBy !== adminId) {
+            // Optional: Allow force unlock if expired
+            const lockTime = ticket.lockedAt ? new Date(ticket.lockedAt).getTime() : 0;
+            const now = new Date().getTime();
+            if (ticket.lockedAt && now - lockTime < 5 * 60 * 1000) {
+                throw new BadRequestException('Cannot unlock ticket locked by another admin');
+            }
+        }
+
+        return this.prisma.ticket.update({
+            where: { id: BigInt(id) },
+            data: {
+                lockedBy: null,
+                lockedAt: null,
+            },
         });
     }
 

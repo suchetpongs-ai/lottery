@@ -27,7 +27,7 @@ export class NotificationService {
                 type,
                 title,
                 message,
-                data: data ? JSON.stringify(data) : null,
+                // data field does not exist in schema
             },
         });
     }
@@ -44,7 +44,7 @@ export class NotificationService {
         return this.prisma.notification.count({
             where: {
                 userId,
-                isRead: false,
+                read: false,
             },
         });
     }
@@ -52,11 +52,11 @@ export class NotificationService {
     async markAsRead(notificationId: number, userId: number) {
         return this.prisma.notification.updateMany({
             where: {
-                id: BigInt(notificationId),
+                id: notificationId,
                 userId,
             },
             data: {
-                isRead: true,
+                read: true,
             },
         });
     }
@@ -65,10 +65,10 @@ export class NotificationService {
         return this.prisma.notification.updateMany({
             where: {
                 userId,
-                isRead: false,
+                read: false,
             },
             data: {
-                isRead: true,
+                read: true,
             },
         });
     }
